@@ -20,8 +20,10 @@ a 1080p projector and a phone before anyone walks into the room.
 
 [▶ Live demo](https://mjorgin.github.io/preflight-decks/) ·
 [Open the source file](./examples/preflight-decks-pitch.html) ·
-[How it works](#the-pipeline) ·
-[Install](#install)
+[See it work](#see-it-work) ·
+[How it compares](#how-it-compares) ·
+[Install](#install) ·
+[Mechanisms](#mechanisms)
 
 </div>
 
@@ -62,6 +64,19 @@ python3 scripts/verify-deck.py examples/preflight-decks-pitch.html
 One self-contained HTML file. No build step, no network, no framework. The
 three pre-build directions are in
 [`examples/previews/`](./examples/previews/).
+
+## How it compares
+
+| | Template deck tools | "Make me a deck" in one prompt | **Preflight Decks** |
+| --- | --- | --- | --- |
+| Where the deck comes from | Pick a theme, pour the content in | One draft, no choice | **Three structurally different rendered directions, then you pick** |
+| The usual failure | Beautiful slides, nothing to say | Three "options" that are one skeleton recoloured | The gate makes all three impossible by construction |
+| Quality control | None | Vibes | **Six scored dimensions from screenshots; a weak concept vetoes the run** |
+| Survives the room? | Untested | Untested | **Playwright-verified at 1280×720 and 390×844** |
+| What you ship | A file in someone else's cloud | A file | **One self-contained HTML file, plus optional PDF or live URL** |
+
+Not a template pack, and not a generator: it is the judgment layer that runs
+*before* generation and the proof that runs *after* it.
 
 ## Why a gate?
 
@@ -137,6 +152,17 @@ python3 -m pip install playwright pillow
 python3 -m playwright install chromium
 ```
 
+One command if you use the [skills](https://skills.sh) CLI:
+
+```bash
+npx skills add MJorgin/preflight-decks
+```
+
+> **Check the install afterwards.** This skill is not one file — `references/`,
+> `templates/`, `scripts/` and `examples/` are all required. If only `SKILL.md`
+> landed in your skills directory, your CLI is too old to sync subdirectories
+> (≤ 1.5.15 had that bug); upgrade, or use the clone below.
+
 Then clone into your agent's skills directory:
 
 ```bash
@@ -191,10 +217,77 @@ scripts/render_readme_hero.py    rebuilds the hero film above
 examples/                        the dogfooded deck + its three previews
 ```
 
+## Mechanisms
+
+Three mechanisms carry the whole skill. Each one exists because skipping it
+produced a deck that failed in a specific, repeatable way.
+
+**1 · The concept gate** — [references/concept-gate.md](./references/concept-gate.md).
+Before anything is built, the brief has to survive one sentence worth arguing
+with, and three directions have to be rendered as real slides. "Structurally
+different" is enforced, not encouraged: three recolours of one skeleton fail
+the gate, because a choice between recolours is not a choice. The picked
+direction gets written to `templates/direction-approved.md`, and only then does
+the full deck exist.
+
+**2 · The critique loop** — [references/critique-rubric.md](./references/critique-rubric.md).
+Every draft is scored on six dimensions from its own rendered screenshots
+(bar 7.5, nothing below 6). Concept quality is a veto: a polished deck built on
+a weak argument scores lower than a rough deck with something to say, because
+that is the failure the room notices first.
+
+**3 · The verifier** — [references/deck-verification.md](./references/deck-verification.md) and
+`scripts/verify-deck.py`. Geometry is checked mechanically at 1280×720 and
+390×844: overflow, elements escaping the stage, blank slides, leftover
+placeholders, uniform stage scaling. Exit codes are CI-shaped (`0` pass, `2`
+hard errors, `1` tooling), so "verified" is a fact about a run, not a claim
+about intent.
+
+## Security and data flow
+
+- **Local only.** The skill makes no network calls of its own: no telemetry, no
+  accounts, no uploads, no hosted service. The one download is Chromium for
+  Playwright at install time (~150 MB).
+- **What the verifier touches.** It launches a local Chromium against the deck
+  file, screenshots it, and writes images plus `report.json` into
+  `<deck>/.preflight-check/`. Nothing leaves the machine.
+- **What ships.** Decks are single self-contained HTML files — no CDN calls, no
+  fonts fetched at view time, no analytics. A deck opened offline renders
+  exactly as verified.
+- **Your content stays yours.** The skill reads the files you point it at and
+  writes new files; it never posts, publishes or pushes anywhere.
+
+## Limitations
+
+- **Verification needs a real browser stack.** Without Python 3.9+ plus
+  Playwright and Chromium, the skill can build a deck but cannot prove it —
+  and an unproven deck is not a deliverable here.
+- **The chassis is a peer, not a dependency you can skip.**
+  [frontend-slides](https://github.com/zarazhangrui/frontend-slides) supplies
+  the fixed-stage single-file format, the templates and the export tooling.
+- **Geometry, not taste.** The verifier catches what can be measured
+  (overflow, escapes, blanks, placeholders); whether a slide is worth watching
+  is the critique loop's job, and it is a judgment call by design.
+- **No PPTX export here.** PDF and live-URL output come from the chassis;
+  editable PPTX conversion is out of scope for this repository.
+- **Decks only.** Websites, product prototypes and standalone product films are
+  explicitly not what this skill is for.
+
 ## Scope
 
 Decks only — pitches, talks, teaching decks, internal reports, PPTX → HTML.
 Not websites, product prototypes, or standalone product films.
+
+## Origin
+
+Built while making launch pages for AI coding-agent skills. The decks agents
+produced were fast, competent and forgettable: the failure was never the CSS,
+it was upstream — no argument, "three options" that were one skeleton
+recoloured, or a layout that only worked on the author's laptop and broke on
+the projector. Preflight Decks is the gate that got added after the third
+time a deck had to be rebuilt from the argument up. Everything in this
+README — the six-slide example, the hero film, the verification sheet — came
+out of that same pipeline.
 
 ## Credits
 
@@ -208,6 +301,13 @@ A thin opinionated layer standing on two MIT-licensed works:
 Independent community project from the maker of
 [github-launch-studio](https://github.com/MJorgin/github-launch-studio); not
 affiliated with either upstream.
+
+## Connect
+
+Issues, ideas and deck post-mortems are welcome in
+[GitHub Issues](https://github.com/MJorgin/preflight-decks/issues) — the most
+useful bug report is a deck that passed the verifier and still failed in the
+room.
 
 ## License
 

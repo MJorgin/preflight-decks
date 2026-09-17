@@ -29,6 +29,11 @@ The discipline lives in three assets this skill owns:
 | `frontend-slides` (zarazhangrui/frontend-slides, MIT) | Delivery chassis: `viewport-base.css`, fixed 1920×1080 stage, single-file architecture, inline editing, PDF/deploy scripts, PPTX extraction, bold template pack | Yes |
 | `huashu-design` (alchaincyf/huashu-design, MIT) | Deeper references for launch-film-grade animation, brand asset protocol, UI demo cinematography | Optional |
 
+Own references: `concept-gate.md`, `critique-rubric.md`, `deck-verification.md`,
+and `scroll-camera-recipes.md` — the last one is for the launch surface around
+a deck (README hero film, landing page, scroll choreography), studied from
+apple.com's product pages with measured numbers.
+
 Before starting, confirm `frontend-slides` is installed (e.g.
 `~/.codex/skills/frontend-slides/SKILL.md`). If it is missing, stop and give
 the user the one-line install instruction; do **not** improvise a stage
@@ -158,6 +163,14 @@ Report the file path, chosen direction name, slide count, density mode, and
 verification result. Offer the frontend-slides downstream actions: inline
 editing, PDF export, deploy-to-URL. Clean up temporary preview folders, but
 keep `direction-approved.md` and the verification report with the project.
+
+If the deliverable includes a **launch surface** — a README hero film, a
+landing page, or any scroll-driven presentation of the deck — read
+`references/scroll-camera-recipes.md` before designing it. It carries the
+measured Apple patterns (pinned scroll-scrubbed hero, horizontal snap rails,
+copy that swaps while the product stays, alternating shot widths) and the
+small-to-large push recipe, plus the rule this repository learned the hard
+way: text must never sit on top of imagery that contains its own text.
 
 ## Hard rules (quick checklist)
 
