@@ -16,8 +16,8 @@ for (const page of pages) {
 
   const html = readFileSync(file, 'utf8');
   const references = [
-    ...html.matchAll(/(?:src|href)=["']([^"']+)["']/g).map(match => match[1]),
-    ...html.matchAll(/["']([^"']*assets\/[^"']+)["']/g).map(match => match[1]),
+    ...[...html.matchAll(/(?:src|href)=["']([^"']+)["']/g)].map(match => match[1]),
+    ...[...html.matchAll(/["']([^"']*assets\/[^"']+)["']/g)].map(match => match[1]),
   ];
 
   for (const rawReference of references) {
