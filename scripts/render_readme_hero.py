@@ -40,17 +40,18 @@ ASSETS = ROOT / "assets"
 SF = "/System/Library/Fonts/SFNS.ttf"
 SFMONO = "/System/Library/Fonts/SFNSMono.ttf"
 
-# Direction C · stage light. The names below are the roles the scenes use; the
-# values are the dark stage so no scene code had to be rewritten to restyle it.
-PAPER = (11, 12, 14)            # stage
-SHEET = (24, 26, 31)            # panel
+# Direction C · cinematic instrument stage. The historical names below are kept
+# so scene code stays readable; the values now match the live launch surface.
+PAPER = (5, 6, 9)               # OLED stage
+SHEET = (17, 19, 25)            # glass panel
 INK = (244, 245, 248)           # primary text
 INK2 = (163, 168, 176)          # secondary
 INK3 = (120, 126, 136)          # tertiary
-LINE = (58, 62, 70)             # hairline
+LINE = (82, 88, 100)            # hairline
 CINNABAR = (232, 72, 44)        # signal
 CINNABAR_BRIGHT = (255, 94, 64)
 AMBER = (226, 178, 120)         # eyebrow
+CYAN = (104, 211, 255)          # cool counter-light
 CODE = (22, 24, 28)
 CODE_PAPER = (226, 230, 236)
 
@@ -151,19 +152,162 @@ def center_tracked(d, cx, y, text, fnt, fill, tracking=0):
     tracked(d, (cx - tracked_w(d, text, fnt, tracking) / 2, y), text, fnt, fill, tracking)
 
 
+def radial_glow(width, height, center, radius, color, peak):
+    """Soft radial light with a transparent edge."""
+    size = max(2, radius * 2)
+    mask = Image.radial_gradient("L").resize((size, size), Image.LANCZOS)
+    mask = mask.point(lambda v: int(max(0, 255 - v) * peak / 255))
+    layer = Image.new("RGBA", (size, size), color + (0,))
+    layer.putalpha(mask)
+    x, y = center
+    return layer, (int(x - radius), int(y - radius)), width, height
+
+
+def render_stage(width=W, height=H):
+    """Build the deterministic OLED set: gradient, lights, grid, stars, grain."""
+    sx, sy = width / W, height / H
+    img = Image.new("RGBA", (width, height), PAPER + (255,))
+    px = img.load()
+    top = (8, 10, 16)
+    mid = PAPER
+    bottom = (4, 5, 8)
+    for y in range(height):
+        p = y / max(1, height - 1)
+        if p < 0.47:
+            t = p / 0.47
+            col = tuple(round(top[i] + (mid[i] - top[i]) * t) for i in range(3))
+        else:
+            t = (p - 0.47) / 0.53
+            col = tuple(round(mid[i] + (bottom[i] - mid[i]) * t) for i in range(3))
+        for x in range(width):
+            px[x, y] = col + (255,)
+
+    lights = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    for cx, cy, radius, color, peak in [
+        (0.77 * width, -0.07 * height, int(470 * sx), CINNABAR, 62),
+        (0.13 * width, 0.12 * height, int(400 * sx), AMBER, 48),
+        (0.48 * width, 1.12 * height, int(460 * sy), CYAN, 38),
+        (0.50 * width, 0.43 * height, int(620 * max(sx, sy)), (255, 255, 255), 15),
+    ]:
+        glow, box, _, _ = radial_glow(width, height, (cx, cy), radius, color, peak)
+        lights.alpha_composite(glow, (max(-radius, min(width, box[0])),
+                                      max(-radius, min(height, box[1]))))
+    sheen = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    ImageDraw.Draw(sheen).polygon([
+        (0, 0), (int(width * 0.72), 0), (int(width * 0.36), height), (0, height)
+    ], fill=(255, 255, 255, 10))
+    lights.alpha_composite(sheen.filter(ImageFilter.GaussianBlur(int(34 * max(sx, sy)))))
+    img.alpha_composite(lights)
+
+    # Perspective technical field, masked by the hero's lower-stage geometry.
+    grid = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    gd = ImageDraw.Draw(grid)
+    horizon_y = int(405 * sy)
+    near_y = int(height * 1.08)
+    near_l, near_r = int(-120 * sx), int(width + 120 * sx)
+    far_l, far_r = int(width * 0.36), int(width * 0.64)
+    for i in range(11):
+        t = i / 10
+        xn = near_l + (near_r - near_l) * t
+        xf = far_l + (far_r - far_l) * t
+        alpha = int(10 + 18 * (1 - abs(t - 0.5) * 2))
+        gd.line((xf, horizon_y, xn, near_y), fill=(255, 255, 255, alpha), width=max(1, int(sx)))
+    for i in range(9):
+        t = (i + 1) / 10
+        y = horizon_y + (near_y - horizon_y) * (t ** 1.65)
+        xl = far_l + (near_l - far_l) * t
+        xr = far_r + (near_r - far_r) * t
+        alpha = int(8 + 20 * t)
+        gd.line((xl, y, xr, y), fill=(255, 255, 255, alpha), width=max(1, int(sx)))
+    grid_mask = Image.new("L", (width, height), 0)
+    md = ImageDraw.Draw(grid_mask)
+    md.ellipse((int(width * 0.12), int(height * 0.35), int(width * 0.88), int(height * 1.18)),
+               fill=96)
+    grid.putalpha(Image.composite(grid.getchannel("A"), Image.new("L", (width, height), 0),
+                                  grid_mask).filter(ImageFilter.GaussianBlur(int(2 * sx))))
+    img.alpha_composite(grid)
+
+    # A controlled vignette pushes the eye toward product panels without a
+    # cheap purple/black wash.
+    vignette = Image.new("L", (width, height), 0)
+    vmask = Image.radial_gradient("L").resize((width, height), Image.LANCZOS)
+    vignette = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    vignette.putalpha(vmask.point(lambda v: int(v * 0.18)))
+    img.alpha_composite(vignette)
+
+    # Sparse constellation field: deterministic and still, matching the live page.
+    rng = random.Random(20260917)
+    count = min(82, max(34, int(width * height / 17000)))
+    stars = []
+    for i in range(count):
+        stars.append({
+            "x": rng.randrange(width), "y": rng.randrange(height),
+            "z": 0.25 + rng.random() * 0.75, "r": max(1.0, (0.45 + rng.random() * 1.25) * sx),
+            "link": i % 4 == 0, "glow": i % 9 == 0,
+            "color": CINNABAR if rng.random() < 0.10 else
+                     AMBER if rng.random() < 0.32 else
+                     CYAN if rng.random() < 0.48 else (246, 247, 251),
+        })
+    sky = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    sd = ImageDraw.Draw(sky)
+    for i, p in enumerate(stars):
+        for q in stars[i + 1:]:
+            if not (p["link"] and q["link"]):
+                continue
+            dist = math.hypot(p["x"] - q["x"], p["y"] - q["y"])
+            if dist < 118 * max(sx, sy):
+                alpha = int(14 * (1 - dist / (118 * max(sx, sy))) * p["z"] * q["z"])
+                sd.line((p["x"], p["y"], q["x"], q["y"]), fill=AMBER + (alpha,), width=1)
+    for p in stars:
+        alpha = int(30 + 108 * p["z"])
+        if p["glow"]:
+            r = p["r"] * 4.2
+            sd.ellipse((p["x"] - r, p["y"] - r, p["x"] + r, p["y"] + r),
+                       fill=p["color"] + (int(alpha * 0.18),))
+        r = p["r"]
+        sd.ellipse((p["x"] - r, p["y"] - r, p["x"] + r, p["y"] + r),
+                   fill=p["color"] + (alpha,))
+    img.alpha_composite(sky)
+
+    # Fine film grain, fixed per render so the GIF does not shimmer.
+    grain = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    gp = grain.load()
+    for _ in range(int(width * height * 0.018)):
+        x, y = rng.randrange(width), rng.randrange(height)
+        value = rng.randrange(190, 256)
+        gp[x, y] = (value, value, value, rng.randrange(5, 15))
+    img.alpha_composite(grain)
+    return img
+
+
+BASE_STAGE = render_stage(W, H)
+WORLD_STAGE = render_stage(WORLD_W, WORLD_H)
+
+
 def stage():
-    """Stage-light background: black field, one soft wedge, film grain added later."""
-    img = Image.new("RGBA", (W, H), PAPER + (255,))
-    wedge = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    ImageDraw.Draw(wedge).polygon([(0, 0), (int(W * 0.72), 0), (int(W * 0.30), H), (0, H)],
-                                  fill=(255, 252, 246, 22))
-    img.alpha_composite(wedge.filter(ImageFilter.GaussianBlur(64)))
-    glow = Image.radial_gradient("L").resize((int(W * 0.66), int(H * 0.72)), Image.LANCZOS)
-    glow = glow.point(lambda v: max(0, 255 - v)).point(lambda v: int(v * 16 / 255))
-    halo = Image.new("RGBA", glow.size, (255, 244, 226, 0))
-    halo.putalpha(glow)
-    img.alpha_composite(halo, (int(W * 0.04), int(H * 0.04)))
+    """Return a copy of the shared, deterministic cinematic stage."""
+    img = BASE_STAGE.copy()
     return img, ImageDraw.Draw(img)
+
+
+def text_shadow(d, xy, text, fnt, tracking=0, fill=(0, 0, 0, 150)):
+    x, y = xy
+    for ch in text:
+        d.text((x, y + 2), ch, font=fnt, fill=fill)
+        x += d.textlength(ch, font=fnt) + tracking
+
+
+def tracked_shadow(d, xy, text, fnt, fill, tracking=0):
+    text_shadow(d, xy, text, fnt, tracking)
+    tracked(d, xy, text, fnt, fill, tracking)
+
+
+def center_scrim(d, cy, text, fnt, tracking=0, pad_x=26, height=58):
+    tw = tracked_w(d, text, fnt, tracking)
+    x0, x1 = W / 2 - tw / 2 - pad_x, W / 2 + tw / 2 + pad_x
+    d.rounded_rectangle((x0, cy - 12, x1, cy + height - 12), radius=18,
+                        fill=(6, 8, 13, 188), outline=(255, 255, 255, 26), width=1)
+    center_tracked(d, W / 2, cy, text, fnt, INK, tracking)
 
 
 def hud(img, label, chip=False):
@@ -208,7 +352,7 @@ def stamp(text1, text2, scale=1.0, alpha=235):
 
 def apply_camera(sheet, zoom, cx, cy):
     """Crop a window out of the bled world and scale it to the output frame."""
-    world = Image.new("RGB", (WORLD_W, WORLD_H), PAPER)
+    world = WORLD_STAGE.convert("RGB")
     world.paste(sheet.convert("RGB"), (BX, BY))
     win_w, win_h = W / zoom, H / zoom
     x = clamp(cx + BX - win_w / 2, 0, WORLD_W - win_w)
@@ -297,8 +441,8 @@ WASH_AT, STAMP_AT, CAPTION_AT = 30, 44, 52
 
 def shot_gate(f, n):
     img, d = stage()
-    center_tracked(d, W / 2, 110, "ONE BRIEF, THREE STRUCTURALLY DIFFERENT DIRECTIONS",
-                   F["h2"], INK)
+    center_scrim(d, 96, "ONE BRIEF, THREE STRUCTURALLY DIFFERENT DIRECTIONS",
+                 F["h2"], height=60)
 
     for i, (path, idx, label) in enumerate(THUMBS):
         enter = ease_out((f - i * 8) / 8)
@@ -316,8 +460,11 @@ def shot_gate(f, n):
         d.rounded_rectangle((x - 2, y - 2, x + TH_W + 1, y + TH_H + 1), radius=2,
                             outline=CINNABAR_BRIGHT if chosen else LINE,
                             width=3 if chosen else 2)
+        text_shadow(d, (x, y - 34), idx, F["mono_b"])
         d.text((x, y - 34), idx, font=F["mono_b"], fill=CINNABAR if chosen else INK3)
-        d.text((x + 44, y - 31), label, font=F["mono_s"], fill=CINNABAR if chosen else INK2)
+        text_shadow(d, (x + 44, y - 31), label, F["mono_s"])
+        d.text((x + 44, y - 31), label, font=F["mono_s"],
+               fill=CINNABAR if chosen else INK2)
 
     if f >= STAMP_AT:
         q = ease_out_back((f - STAMP_AT) / 8)
@@ -371,8 +518,12 @@ def shot_verify(f, n):
 
     # Far layer: headline, racking into focus over the first 12 frames.
     far = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    ImageDraw.Draw(far).text((64, 92), "Every slide is checked on the room it will actually meet.",
-                             font=F["h2"], fill=INK)
+    fd = ImageDraw.Draw(far)
+    verify_title = "Every slide is checked on the room it will actually meet."
+    tw = fd.textlength(verify_title, font=F["h2"])
+    fd.rounded_rectangle((48, 78, 48 + tw + 34, 146), radius=18,
+                         fill=(6, 8, 13, 188), outline=(255, 255, 255, 24), width=1)
+    fd.text((65, 92), verify_title, font=F["h2"], fill=INK)
     if f < 12:
         far = far.filter(ImageFilter.GaussianBlur(3 * (1 - f / 12)))
     img.alpha_composite(far, (int(x * 0.35), int(y * 0.35)))
@@ -535,9 +686,8 @@ def main():
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-framerate", str(FPS),
                     "-i", str(tmp / "f%04d.png"), "-c:v", "libx264", "-pix_fmt", "yuv420p",
                     "-crf", "19", str(mp4)], check=True)
-    # Global palette + light ordered dither keeps the flat field-manual palette
-    # crisp and the file near 2.5MB; the bayer scale is coarse so it does not
-    # turn the paper texture into noise.
+    # A global no-dither palette keeps screenshots and small labels crisp while
+    # preserving the richer OLED stage without animation-noise shimmer.
     palette = tmp / "pal.png"
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(mp4),
                     "-vf", "fps=12.5,scale=960:540,palettegen=max_colors=48:stats_mode=single",

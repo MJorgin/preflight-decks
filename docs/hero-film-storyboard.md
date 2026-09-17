@@ -5,14 +5,16 @@
 vocabulary of `references/scroll-camera-recipes.md` — the grammar measured
 from apple.com's product pages.
 
-**Direction C · stage light.** Black stage, one soft light wedge, SF Pro for
-display type, SF Mono for labels, amber eyebrows, signal-red accent. The
-previous cut was the "field manual" look (paper + cinnabar); this one replaces
-the paper stage with a lit one, so the deck reads as a product under a light
-rather than a page in a binder.
+**Direction C · cinematic instrument stage.** OLED near-black gradient, warm
+signal light, one cool counter-light, SF Pro for display type, SF Mono for
+labels, amber eyebrows, signal-red accent. The set also carries a sparse
+particle/constellation field, a masked perspective grid and fixed film grain,
+matching the live launch page while leaving the product screenshots as the
+dominant focal points.
 
 1280×720 master at 25fps, 496 frames (19.84s); GIF export 960×540 at 12.5fps,
-48-colour palette, no dither (measured: text stays legible, no banding, ~3.6MB).
+48-colour palette, no dither (measured: text and screenshots stay legible;
+the richer stage is ~5.1MB, still suitable for a GitHub README).
 
 | # | Time | Shot | Camera move + motive | Composition | Transition to next | Acceptance frames |
 |---|---|---|---|---|---|---|
@@ -35,6 +37,6 @@ python3 scripts/render_readme_hero.py
 ```
 
 The verifier screenshots the film is cut from are generated, not committed; the
-script runs `scripts/verify-deck.py` first when they are missing. A fresh clone
-therefore rebuilds the film byte-identically (verified: same sha256 as the
-committed asset).
+script runs `scripts/verify-deck.py` first when they are missing. The stage is
+deterministic, so a fresh clone rebuilds the same film without random particle
+or grain flicker.

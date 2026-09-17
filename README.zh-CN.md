@@ -25,7 +25,7 @@
 
 </div>
 
-![同一个需求变成三个结构真正不同的真实预览，被选中的方向做成六页 deck，并在投影仪和手机尺寸下通过验收](./assets/hero-concept-gate.gif)
+![同一个需求变成三个结构真正不同的真实预览，被选中的方向做成六页 deck，并在投影仪和手机尺寸下通过验收](./assets/hero-concept-gate.gif?v=20260917-cinematic)
 
 <p align="center"><sub>
 20 秒 · 需求 → 三个真实方向 → 选定后成稿 → 双视口验收。
@@ -33,8 +33,9 @@
 <a href="./examples/preflight-decks-pitch.html">示例 deck</a>，以及真实的验收报告：
 <b>6 页 · 2 个视口 · 0 错误 · 0 警告</b>。
 用摄影机拍的：开场定场微推、一次对准选中方向的 1.3x 推近、验收墙上的视差漂移，
-最后拉回全景停稳。
-<a href="./assets/hero-concept-gate.mp4">MP4 版</a> ·
+最后拉回全景停稳。背景也换成与在线落地页一致的 OLED 渐变、稀疏粒子场、
+透视网格和固定颗粒。
+<a href="./assets/hero-concept-gate.mp4?v=20260917-cinematic">MP4 版</a> ·
 <a href="./docs/hero-film-storyboard.md">分镜卡</a>
 </sub></p>
 
