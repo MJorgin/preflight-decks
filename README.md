@@ -1,115 +1,177 @@
-# Preflight Decks
+<div align="center">
+
+# ✈️ Preflight Decks
+
+### The concept gate for AI-built presentations.
 
 [![CI](https://github.com/MJorgin/preflight-decks/actions/workflows/ci.yml/badge.svg)](https://github.com/MJorgin/preflight-decks/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![Agent: Codex](https://img.shields.io/badge/agent-Codex-685DFF)
+![Agent: Claude Code](https://img.shields.io/badge/agent-Claude%20Code-D97757)
+![Agent: DSH](https://img.shields.io/badge/agent-DeepSeek%20Harness-2D664A)
+![Agent: any SKILL.md](https://img.shields.io/badge/agent-any%20SKILL.md%20reader-888)
 
-![Preflight Decks social card](./assets/social-card.png)
+Before your agent builds the deck, you get **three structurally different
+real previews** and pick on pixels. The chosen direction becomes a
+single-file, fixed-stage HTML deck — and a Playwright verifier proves it fits
+a 1080p projector and a phone before anyone walks into the room.
 
-**A concept-first director for HTML presentations.** It stops decks from
-failing upstream: no idea, three "options" that are one skeleton recolored,
-or a beautiful layout that overflows on the projector or a phone.
+[▶ Open the example deck](./examples/preflight-decks-pitch.html) ·
+[How it works](#the-pipeline) ·
+[Install](#install)
 
-Preflight Decks is a thin orchestration skill. It owns the judgment layer
-and mechanical verification, and uses
-[frontend-slides](https://github.com/zarazhangrui/frontend-slides) (MIT) as
-the delivery chassis: fixed 1920×1080 stage, single self-contained HTML
-file, inline editing, PDF/URL export, PPTX conversion.
+</div>
 
-## See it work
+![One brief becomes three structurally different real previews; the chosen direction is built into a six-slide deck and verified at projector and phone sizes](./assets/hero-concept-gate.gif)
 
-The same brief produces three **structurally different** real previews —
-not one skeleton in three colors. The user chooses on pixels, and only the
-chosen direction is built into the full deck:
+<p align="center"><sub>
+17 seconds · intake → three real directions → chosen deck → dual-viewport verification.
+Every frame is this repo's own output — the concept-gate previews, the six-slide
+<a href="./examples/preflight-decks-pitch.html">example deck</a>, and a real verifier
+report: <b>6 slides · 2 viewports · 0 errors · 0 warnings</b>.
+<a href="./assets/hero-concept-gate.mp4">MP4 version</a>
+</sub></p>
 
-![Three concept-gate previews: safe preset, bold template, wildcard field manual](./assets/demo-previews.png)
+> **Dogfooded, not aspirational.** The deck in this README was built through
+> the pipeline in this repo, and the README page itself passed the same
+> "what does it look like rendered, not imagined" check the skill enforces.
 
-The chosen wildcard direction — a "launch preflight field manual" — becomes a
-six-slide pitch deck, rendered here from the actual example file in this
-repo:
-
-[![Six-slide example deck](./assets/hero-deck.gif)](./examples/preflight-decks-pitch.html)
-
-Every deck then passes a Playwright verifier at projector and phone sizes.
-The example deck scores **6 slides, 0 errors, 0 warnings**:
-
-![Verification contact sheet at 1280x720 and 390x844](./assets/verification-contact-sheet.png)
-
-Try it in 30 seconds — open
-[`examples/preflight-decks-pitch.html`](./examples/preflight-decks-pitch.html)
-in a browser (arrow keys to navigate). The three concept-gate
-previews live in [`examples/previews/`](./examples/previews/). Then run:
+## Try it in 30 seconds — no install
 
 ```bash
+# 1. open the deck in any browser, arrow keys to move through 6 slides
+open examples/preflight-decks-pitch.html
+
+# 2. run the same verification your decks get
 python3 scripts/verify-deck.py examples/preflight-decks-pitch.html
 ```
 
-## Why
+One self-contained HTML file. No build step, no network, no framework. The
+three pre-build directions are in
+[`examples/previews/`](./examples/previews/).
 
-Most deck skills sell templates. The default failure is not ugly slides —
-it is a competent deck with nothing to say, or a layout that only works on
-the author's screen. Preflight Decks makes three things mandatory:
+## Why a gate?
 
-1. **Concept Gate** — one sentence worth arguing, a visual motif grown from
-   the content, and three *structurally different* real previews before a
-   full deck exists.
-2. **Critique Loop** — every draft is scored from rendered screenshots; a
-   weak concept vetoes the run no matter how polished it is.
-3. **Bulletproof chassis** — every deck is a single fixed-stage HTML file
-   proven to fit 1280×720 and 390×844 by an automated screenshot check.
+Agents make decks fast. The decks still fail exactly where they always did:
 
-## Pipeline
+1. **Nothing to say** — polished slides wrapped around an argument nobody made.
+2. **Three skins** — "style options" that are one skeleton recolored three times.
+3. **Fits one screen** — gorgeous on your laptop, overflowing on the projector or a phone.
+
+Preflight Decks makes all three *impossible by construction*: no full deck
+exists until you've chosen between three **structurally different** rendered
+directions; every draft is scored from screenshots, and a weak concept vetoes
+the run however polished the pixels; every finished deck is mechanically
+verified at projector and phone sizes.
+
+It is a thin, opinionated **judgment layer** that uses
+[frontend-slides](https://github.com/zarazhangrui/frontend-slides) (MIT) as
+the delivery chassis — fixed 1920×1080 stage, single HTML file, inline
+editing, PDF/URL export, PPTX conversion.
+
+## The pipeline
 
 ```
-0 Intake        content inventory + speaking/reading density
-1 Concept Gate  idea sentence → 3 real previews → user picks → gate file
-2 Build         full deck on the frontend-slides fixed-stage chassis
-3 Critique      six-dimension score → fix → re-score (bar: 7.5, no dim <6)
-4 Verify        scripts/verify-deck.py, zero hard errors
-5 Deliver       one HTML file (+ optional PDF / live URL)
+0  Intake        content inventory + speaking vs. reading density
+1  Concept gate  one argue-with sentence → 3 real previews → you pick → gate file
+2  Build         full deck on the frontend-slides fixed-stage chassis
+3  Critique      six-dimension scores from screenshots (bar 7.5, no dim < 6)
+4  Verify        scripts/verify-deck.py — zero hard errors or no ship
+5  Deliver       one HTML file (+ optional PDF / live URL)
 ```
+
+## See it work
+
+### 1. Three real directions — not three recolors
+
+The same brief rendered three ways. Only the chosen one gets built.
+
+![Three concept-gate previews: safe preset, bold template, wildcard field manual, with the wildcard marked chosen](./assets/demo-previews.png)
+
+### 2. The chosen direction becomes the deck
+
+The wildcard — a *launch preflight field manual* — becomes the six-slide pitch
+deck, all in one file:
+
+[![Six-slide example deck rendered from the single example HTML file](./assets/hero-deck.gif)](./examples/preflight-decks-pitch.html)
+
+### 3. Verified on the room it will actually meet
+
+Every deck is screenshotted at **1280×720** and **390×844** and checked for
+overflow, elements escaping the stage, blank slides, and leftover
+placeholders:
+
+![Verification contact sheet: all six slides at projector size and the first three on a phone, all clean](./assets/verification-contact-sheet.png)
+
+Exit code `0` = pass, `2` = hard errors, `1` = tooling problem — so the check
+works in CI, not just on trust.
+
+## What the gate adds
+
+| Stage | What the skill forces |
+| --- | --- |
+| **Concept gate** | One sentence worth arguing, a motif grown from the content, and three *structurally different* previews rendered before a full deck exists |
+| **Critique loop** | Six scored dimensions from actual screenshots; concept quality can veto the run |
+| **Chassis** | Single fixed-stage 1920×1080 HTML file via frontend-slides — no framework, portable, editable inline |
+| **Verification** | Playwright at projector + phone size: overflow, escape, blank-slide, and placeholder checks with a CI-shaped exit code |
 
 ## Install
 
-Codex / Claude Code / any agent that loads skills from a folder:
-
-```bash
-# Chassis (required peer skill)
-git clone https://github.com/zarazhangrui/frontend-slides \
-  ~/.codex/skills/frontend-slides
-
-# This skill
-git clone https://github.com/MJorgin/preflight-decks \
-  ~/.codex/skills/preflight-decks
-```
-
-The verifier needs Playwright + Chromium:
+The verifier needs Playwright and Chromium:
 
 ```bash
 python3 -m pip install playwright pillow
 python3 -m playwright install chromium
 ```
 
-## Verifier
-
-Run it against any fixed-stage HTML deck:
+Then clone into your agent's skills directory:
 
 ```bash
-python3 scripts/verify-deck.py path/to/deck.html
+# Codex (personal)
+git clone https://github.com/MJorgin/preflight-decks ~/.codex/skills/preflight-decks
+
+# Claude Code
+git clone https://github.com/MJorgin/preflight-decks ~/.claude/skills/preflight-decks
 ```
 
-It writes per-slide screenshots (720p + phone), a contact sheet, and
-`report.json` into `.preflight-check/`, checking:
+The skill also needs its chassis peer,
+[frontend-slides](https://github.com/zarazhangrui/frontend-slides):
 
-- the 1920×1080 stage scales uniformly and stays ~16:9 on a phone;
-- no slide overflows and nothing escapes the stage;
-- no blank slides, no placeholder/lorem text;
-- warns on generic display font stacks.
+```bash
+git clone https://github.com/zarazhangrui/frontend-slides ~/.codex/skills/frontend-slides
+```
 
-Exit code: `0` pass (warnings allowed), `2` hard errors, `1` tooling error.
+Any agent that reads `SKILL.md` from a folder can use it — point the agent at
+this repository and it will load only the referenced files it needs.
+
+## Say this
+
+```text
+Make me a pitch deck for X. Don't build anything until I've picked
+from three real, structurally different directions.
+```
+
+```text
+Critique these slides from rendered screenshots, score all six
+dimensions, and re-run the projector + phone verifier.
+```
+
+## What's in the box
+
+```text
+SKILL.md                         the orchestration contract
+references/concept-gate.md       the hard door + three-direction protocol
+references/critique-rubric.md    six scored dimensions, veto rules
+references/deck-verification.md  what "verified" means and why
+templates/direction-approved.md  the gate file the user signs off on
+scripts/verify-deck.py           Playwright dual-viewport verifier
+scripts/render_readme_hero.py    rebuilds the hero film above
+examples/                        the dogfooded deck + its three previews
+```
 
 ## Scope
 
-Decks only — pitches, talks, teaching, internal reports, PPTX → HTML.
+Decks only — pitches, talks, teaching decks, internal reports, PPTX → HTML.
 Not websites, product prototypes, or standalone product films.
 
 ## Credits
@@ -119,13 +181,12 @@ A thin opinionated layer standing on two MIT-licensed works:
 - [zarazhangrui/frontend-slides](https://github.com/zarazhangrui/frontend-slides) —
   fixed-stage single-file deck chassis, templates, export tooling.
 - [alchaincyf/huashu-design](https://github.com/alchaincyf/huashu-design) —
-  the concept-first methodology, critique rubric, and verification mindset
-  distilled into this skill's references.
+  the concept-first methodology and critique mindset behind the references.
 
-From the maker of [github-launch-studio](https://github.com/MJorgin/github-launch-studio),
-a Codex skill for launch-ready open-source repositories. Independent
-community project, not affiliated with either upstream.
+Independent community project from the maker of
+[github-launch-studio](https://github.com/MJorgin/github-launch-studio); not
+affiliated with either upstream.
 
 ## License
 
-MIT
+[MIT](./LICENSE)
