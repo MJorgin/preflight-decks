@@ -16,7 +16,8 @@ real previews** and pick on pixels. The chosen direction becomes a
 single-file, fixed-stage HTML deck — and a Playwright verifier proves it fits
 a 1080p projector and a phone before anyone walks into the room.
 
-[▶ Open the example deck](./examples/preflight-decks-pitch.html) ·
+[▶ Live demo](https://mjorgin.github.io/preflight-decks/) ·
+[Open the source file](./examples/preflight-decks-pitch.html) ·
 [How it works](#the-pipeline) ·
 [Install](#install)
 
@@ -37,6 +38,12 @@ report: <b>6 slides · 2 viewports · 0 errors · 0 warnings</b>.
 > "what does it look like rendered, not imagined" check the skill enforces.
 
 ## Try it in 30 seconds — no install
+
+**[Open the live demo →](https://mjorgin.github.io/preflight-decks/)** — the
+same file that ships in `examples/`, served straight from `main`. Arrow keys
+move through six slides.
+
+Or run it locally:
 
 ```bash
 # 1. open the deck in any browser, arrow keys to move through 6 slides
