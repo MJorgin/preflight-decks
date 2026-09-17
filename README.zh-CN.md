@@ -8,6 +8,8 @@
 [frontend-slides](https://github.com/zarazhangrui/frontend-slides)（MIT）——
 固定 1920×1080 舞台、单文件零依赖、就地编辑、PDF/链接导出、PPTX 转换。
 
+
+[![CI](https://github.com/MJorgin/preflight-decks/actions/workflows/ci.yml/badge.svg)](https://github.com/MJorgin/preflight-decks/actions/workflows/ci.yml)
 ## 为什么需要它
 
 Deck skill 大多在卖模板。真正的默认失败模式不是不美观，而是：做得不差

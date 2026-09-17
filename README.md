@@ -9,6 +9,8 @@ the mechanical verification, and uses [frontend-slides](https://github.com/zaraz
 (MIT) as the delivery chassis: fixed 1920×1080 stage, single self-contained
 HTML file, inline editing, PDF/URL export, PPTX conversion.
 
+
+[![CI](https://github.com/MJorgin/preflight-decks/actions/workflows/ci.yml/badge.svg)](https://github.com/MJorgin/preflight-decks/actions/workflows/ci.yml)
 ## Why
 
 Most deck skills sell templates. The default failure mode is not ugly
