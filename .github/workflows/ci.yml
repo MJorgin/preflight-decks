@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verifier-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile verifier
+        run: python -m py_compile scripts/verify-deck.py
+      - name: Run verifier against a minimal fixed-stage fixture
+        run: |
+          python -m pip install playwright pillow
+          python -m playwright install --with-deps chromium
+          cat > /tmp/fixture.html <<'HTML'
+          <!doctype html><meta charset="utf-88">
+          <style>.viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}.stage{width:1920px;height:1080px;flex-shrink:0;background:#f4f1e8}.slide{position:absolute;inset:0;padding:120px;visibility:hidden}.slide.active{visibility:visible}h1{font:120px Georgia,serif}</style>
+          <div class=viewport><div class=stage>
+          <section class="slide active"><h1>Preflight</h1></section>
+          <section class="slide"><h1>Verified</h1></section>
+          </div></div>
+          <script>let i=0;const s=[...document.querySelectorAll('.slide')];addEventListener('keydown',e=>{if(e.key==='ArrowRight'){s[i].classList.remove('active');i=(i+1)%s.length;s[i].classList.add('active')}});function fit(){document.querySelector('.stage').style.transform='scale('+Math.min(innerWidth/1920,innerHeight/1080)+)'}fit();addEventListener('resize',fit)</script>
+HTML
+          python scripts/verify-deck.py /tmp/fixture.html --out /tmp/check
