@@ -26,11 +26,15 @@ a 1080p projector and a phone before anyone walks into the room.
 ![One brief becomes three structurally different real previews; the chosen direction is built into a six-slide deck and verified at projector and phone sizes](./assets/hero-concept-gate.gif)
 
 <p align="center"><sub>
-17 seconds · intake → three real directions → chosen deck → dual-viewport verification.
+20 seconds · intake → three real directions → chosen deck → dual-viewport verification.
 Every frame is this repo's own output — the concept-gate previews, the six-slide
 <a href="./examples/preflight-decks-pitch.html">example deck</a>, and a real verifier
 report: <b>6 slides · 2 viewports · 0 errors · 0 warnings</b>.
-<a href="./assets/hero-concept-gate.mp4">MP4 version</a>
+Shot with a camera rig: an establishing micro-push, one 1.3x push-in anchored on the
+chosen direction, parallax drift over the verification wall, and a pull-back to a
+full-view hold.
+<a href="./assets/hero-concept-gate.mp4">MP4 version</a> ·
+<a href="./docs/hero-film-storyboard.md">storyboard</a>
 </sub></p>
 
 > **Dogfooded, not aspirational.** The deck in this README was built through
