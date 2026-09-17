@@ -1,0 +1,22 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#111;overflow:hidden}
+.viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+.stage{width:1920px;height:1080px;flex-shrink:0;position:relative;background:#f4f1e8;color:#1a1815;transform-origin:center center}
+.slide{position:absolute;inset:0;padding:120px;visibility:hidden;opacity:0;font-family:Georgia,serif}
+.slide.active{visibility:visible;opacity:1}
+h1{font-size:120px;line-height:1.05}p{font-size:44px;margin-top:40px;color:#5c554a}
+.box{position:absolute;right:120px;bottom:120px;width:520px;height:300px;background:#cc3f24;border-radius:8px}
+</style></head><body>
+<div class="viewport"><div class="stage" id="stage">
+<section class="slide active"><h1>Preflight</h1><p>Clear ideas before pixels.</p></section>
+<section class="slide"><h1>Second</h1><p>Dense content stays inside the stage.</p><div class="box"></div></section>
+<section class="slide"><h1>Close</h1><p>One motif, opened and closed.</p></section>
+</div></div>
+<script>
+let i=0;const s=[...document.querySelectorAll('.slide')];
+function go(n){s[i].classList.remove('active');i=(n+s.length)%s.length;s[i].classList.add('active')}
+addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();go(i+1)}if(e.key==='ArrowLeft')go(i-1)});
+function fit(){const st=document.getElementById('stage'),k=Math.min(innerWidth/1920,innerHeight/1080);st.style.transform='scale('+k+')'}
+fit();addEventListener('resize',fit);
+</script></body></html>
