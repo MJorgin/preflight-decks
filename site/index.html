@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Preflight Decks gives AI-built presentations a concept gate: three real rendered directions, a chosen direction, then projector and phone verification.">
+<meta name="theme-color" content="#0b0c0e">
+<link rel="canonical" href="https://mjorgin.github.io/preflight-decks/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Preflight Decks">
+<meta property="og:title" content="Preflight Decks — concept-first HTML presentations">
+<meta property="og:description" content="Three structurally different directions, chosen on pixels, then verified on a projector and a phone.">
+<meta property="og:url" content="https://mjorgin.github.io/preflight-decks/">
+<meta property="og:image" content="https://mjorgin.github.io/preflight-decks/assets/social-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Preflight Decks — concept-first HTML presentations">
+<meta name="twitter:description" content="Three structurally different directions, chosen on pixels, then verified on a projector and a phone.">
+<meta name="twitter:image" content="https://mjorgin.github.io/preflight-decks/assets/social-card.png">
+<link rel="icon" href="data:,">
+<title>Preflight Decks — concept-first HTML presentations</title>
+<style>
+  :root{
+    --stage:#0b0c0e; --ink:#f4f5f8; --mute:#a4a8b0; --signal:#e8482c; --amber:#e2b278;
+    --hair:rgba(255,255,255,.14); --col:68%; --media:87.5%;
+    --ease:cubic-bezier(.32,.72,0,1); --slow:cubic-bezier(.65,0,.35,1);
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--stage);color:var(--ink);
+       font:400 18px/1.5 "SF Pro Text",-apple-system,"Helvetica Neue",Arial,sans-serif;
+       -webkit-font-smoothing:antialiased}
+  h1,h2{font-family:"SF Pro Display",-apple-system,"Helvetica Neue",Arial,sans-serif;margin:0}
+  .eyebrow{font:500 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.28em;
+           text-transform:uppercase;color:var(--amber)}
+  .wrap{width:min(var(--media),1440px);margin:0 auto;padding:0 32px}
+  .copy{width:min(var(--col),980px)}
+
+  /* ── 1 · pinned stage + scroll-scrubbed hero ─────────────────────────── */
+  .hero{height:200vh;position:relative}
+  .stage{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;
+         align-items:center;justify-content:center;gap:2.2vh;overflow:hidden;padding:3vh 0}
+  .stage::before{content:"";position:absolute;inset:0;
+    background:linear-gradient(115deg,rgba(255,252,246,.10),transparent 52%);pointer-events:none}
+  .film{position:relative;height:min(46vh,52vw);aspect-ratio:16/9;width:auto;max-width:92vw;
+        margin:0 auto;border-radius:14px;overflow:hidden;background:#000;isolation:isolate}
+  .film img,.film canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+  .film img.last{z-index:0} .film canvas{z-index:1} .film.ready img.first{opacity:0}
+  .film img.first{z-index:2;transition:opacity .4s var(--ease)}
+  .hero-copy{position:relative;width:min(87.5%,1440px);padding:0 32px;pointer-events:none;text-align:center}
+  .hero-copy h1{font-size:clamp(32px,4.4vw,64px);font-weight:700;letter-spacing:-.02em;line-height:1.05}
+  .hero-copy h1 em{font-style:normal;color:var(--signal)}
+  .hero-copy p{color:var(--mute);font-size:clamp(14px,1.1vw,17px);margin:.7em auto 0;max-width:52ch}
+  .scrub-meter{position:relative;width:min(60%,720px);height:2px;background:rgba(255,255,255,.16);margin-top:1.6vh}
+  .scrub-meter i{display:block;height:100%;width:0;background:var(--signal)}
+
+  section{padding:140px 0}
+  .head{display:flex;gap:28px;align-items:baseline;margin-bottom:48px}
+  .head h2{font-size:clamp(28px,3.4vw,52px);font-weight:700;letter-spacing:-.02em}
+  .head p{color:var(--mute);margin:0;max-width:44ch}
+
+  /* ── 2 · horizontal rail: vertical scroll becomes sideways camera ────── */
+  .rail{display:flex;gap:28px;overflow-x:auto;scroll-snap-type:x mandatory;
+        padding:8px 32px 28px;margin:0 auto;width:min(100%,1440px);
+        scrollbar-width:none;position:relative}
+  .rail::-webkit-scrollbar{display:none}
+  .rail figure{flex:0 0 62%;margin:0;scroll-snap-align:center;position:relative}
+  .rail img{width:100%;border-radius:12px;display:block;border:1px solid var(--hair)}
+  .rail figcaption{margin-top:14px;display:flex;justify-content:space-between;
+    font:500 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;text-transform:uppercase;color:var(--mute)}
+  .rail figcaption b{color:var(--ink);font-weight:600}
+  .rail figure.chosen img{border-color:var(--signal)}
+  .rail figure.chosen figcaption b{color:var(--signal)}
+  .rail-fade{position:relative}
+  .rail-fade::after{content:"";position:absolute;top:0;right:0;bottom:28px;width:160px;pointer-events:none;
+    background:linear-gradient(90deg,transparent,var(--stage))}
+
+  /* ── 4 · copy swaps while the product stays ─────────────────────────── */
+  .swap{display:grid;grid-template-columns:52% 44%;gap:4%;align-items:start}
+  .swap .pinned{position:sticky;top:15vh}
+  .swap .pinned img{width:100%;border-radius:12px;border:1px solid var(--hair)}
+  .swap .steps>*{min-height:60vh;display:flex;flex-direction:column;justify-content:center}
+  .swap .steps h3{margin:0 0 10px;font-size:clamp(20px,2vw,30px);letter-spacing:-.01em}
+  .swap .steps p{color:var(--mute);margin:0;max-width:40ch}
+  .num{font:500 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.24em;color:var(--amber);margin-bottom:14px}
+
+  /* ── 3 · staggered entry ────────────────────────────────────────────── */
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+  .card{background:rgba(255,255,255,.035);border:1px solid var(--hair);border-radius:16px;padding:26px}
+  .card h3{margin:0 0 8px;font-size:20px}
+  .card p{margin:0;color:var(--mute);font-size:16px}
+  .card b{color:var(--ink)}
+  [data-stagger]>*{opacity:0;transform:translateY(26px);
+    transition:opacity .8s var(--ease),transform .8s var(--ease);
+    transition-delay:calc(var(--i,0)*70ms)}
+  [data-stagger].in>*{opacity:1;transform:none}
+
+  footer{padding:120px 0 160px;text-align:center}
+  footer h2{font-size:clamp(30px,4vw,60px);letter-spacing:-.02em}
+  footer p{color:var(--mute)}
+  footer .cta{display:inline-flex;align-items:center;gap:12px;margin-top:26px;padding:14px 22px;
+    border:1px solid var(--hair);border-radius:999px;color:var(--ink);text-decoration:none;
+    transition:transform .5s var(--ease),border-color .5s var(--ease)}
+  footer .cta:hover{transform:translateY(-2px);border-color:var(--signal)}
+  footer .cta span{width:26px;height:26px;border-radius:999px;background:rgba(255,255,255,.08);
+    display:grid;place-items:center;font-size:13px}
+  .footer-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:14px}
+  footer .cta.secondary{background:rgba(255,255,255,.055)}
+
+  @media (max-width:820px){
+    :root{--col:100%;--media:100%}
+    .rail figure{flex-basis:82%}
+    .swap{grid-template-columns:1fr}
+    .swap .pinned{position:relative;top:0;margin-bottom:32px}
+    .grid{grid-template-columns:1fr}
+    .hero{height:170vh}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    .hero{height:auto}
+    .stage{position:relative;height:auto;padding:80px 0}
+    .scrub-meter{display:none}
+    [data-stagger]>*{opacity:1;transform:none;transition:none}
+    .rail{scroll-snap-type:none}
+  }
+</style>
+</head>
+<body>
+
+<section class="hero" id="top">
+  <div class="stage">
+
+    <div class="hero-copy">
+      <div class="eyebrow">Preflight Decks · Codex / Claude Code / DSH</div>
+      <h1 style="margin-top:18px">Clear ideas<br><em>before pixels.</em></h1>
+      <p>Three structurally different directions, chosen on pixels — then verified on a projector and a phone before delivery.</p>
+    </div>
+
+    <div class="film" id="film">
+      <img class="first" src="assets/hero_first.jpg" alt="">
+      <img class="last" src="assets/hero_last.jpg" alt="">
+      <canvas id="heroFilm" width="1280" height="720" aria-hidden="true"></canvas>
+    </div>
+
+    <div class="scrub-meter"><i id="scrubBar"></i></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="head">
+      <h2>One brief, three futures.</h2>
+      <p>Scroll sideways — each direction is a real rendered preview, not a description.</p>
+    </div>
+  </div>
+  <div class="rail-fade">
+    <div class="rail" id="rail" role="region" aria-label="Rendered concept directions; scroll horizontally">
+      <figure><img src="assets/dir-01.png" alt="Safe preset direction"><figcaption><b>01 · Safe preset</b><span>safe</span></figcaption></figure>
+      <figure><img src="assets/dir-02.png" alt="Bold template direction"><figcaption><b>02 · Bold template</b><span>bold</span></figcaption></figure>
+      <figure class="chosen"><img src="assets/dir-03.png" alt="Wildcard field manual direction"><figcaption><b>03 · Wildcard</b><span>chosen</span></figcaption></figure>
+      <figure><img src="assets/deck-05.png" alt="Verification slide from the built deck"><figcaption><b>Built</b><span>verified</span></figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="swap">
+      <div class="pinned"><img src="assets/deck-05.png" alt="A slide of the built deck"></div>
+      <div class="steps">
+        <div><div class="num">STEP 01</div><h3>Concept gate</h3><p>No full deck exists until three structurally different directions have been rendered and one is chosen on pixels.</p></div>
+        <div><div class="num">STEP 02</div><h3>Critique loop</h3><p>Every draft is scored from screenshots across six dimensions; a weak concept vetoes the run however polished the pixels are.</p></div>
+        <div><div class="num">STEP 03</div><h3>Dual-viewport verify</h3><p>Playwright screenshots every slide at 1280×720 and 390×844 and fails the build on overflow, escapes, blanks or placeholders.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="head"><h2>What the gate forces.</h2></div>
+    <div class="grid" data-stagger>
+      <div class="card" style="--i:0"><h3>Concept gate</h3><p>One sentence worth arguing, a motif grown from the content, and <b>three real previews</b> before a full deck exists.</p></div>
+      <div class="card" style="--i:1"><h3>Critique loop</h3><p>Six scored dimensions from actual screenshots — <b>concept quality can veto</b> the run.</p></div>
+      <div class="card" style="--i:2"><h3>Verification</h3><p>Projector + phone checks with a <b>CI-shaped exit code</b>: 0 pass, 2 hard errors, 1 tooling.</p></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <h2>Ship decks that survive the room.</h2>
+    <p>One self-contained HTML file. No build step, no framework.</p>
+    <div class="footer-actions">
+      <a class="cta" href="deck/">Play the six-slide deck <span>↗</span></a>
+      <a class="cta secondary" href="https://github.com/MJorgin/preflight-decks">Open the repository <span>↗</span></a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const film = document.getElementById('film');
+  const canvas = document.getElementById('heroFilm');
+  const ctx = canvas.getContext('2d');
+  const bar = document.getElementById('scrubBar');
+  const hero = document.querySelector('.hero');
+  const rail = document.getElementById('rail');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Filmstrip scrubbing avoids inconsistent HTMLMediaElement seek behavior while
+  // keeping the same 7-second scroll-controlled shot.
+  const FRAME_W = 1280;
+  const FRAME_H = 720;
+  const COLS = 6;
+  const FRAMES = 36;
+  let lastFrame = -1;
+  const filmstrip = new Image();
+  filmstrip.src = 'assets/hero-filmstrip.jpg';
+  const drawFrame = (progress) => {
+    const index = Math.min(FRAMES - 1, Math.floor(progress * FRAMES));
+    if (index === lastFrame || !filmstrip.complete || !filmstrip.naturalWidth) return;
+    ctx.drawImage(
+      filmstrip,
+      (index % COLS) * FRAME_W,
+      Math.floor(index / COLS) * FRAME_H,
+      FRAME_W, FRAME_H,
+      0, 0, FRAME_W, FRAME_H
+    );
+    lastFrame = index;
+    canvas.dataset.frame = index;
+  };
+  const ready = () => { film.classList.add('ready'); drawFrame(0); };
+  if (filmstrip.complete) ready(); else filmstrip.addEventListener('load', ready, {once:true});
+
+  // pattern 1: scroll scrubs the clip (no autoplay)
+  let target = 0, current = 0, raf = null;
+  const measure = () => {
+    const r = hero.getBoundingClientRect();
+    const span = hero.offsetHeight - innerHeight;
+    const p = span > 0 ? Math.min(1, Math.max(0, -r.top / span)) : 0;
+    target = p;
+    bar.style.width = (p * 100).toFixed(1) + '%';
+    if (!raf) raf = requestAnimationFrame(step);
+  };
+  const step = () => {
+    raf = null;
+    current += (target - current) * 0.22;                 // damped follow, never a jump
+    if (Math.abs(target - current) < 0.0015) current = target;
+    drawFrame(current);
+    if (current !== target) raf = requestAnimationFrame(step);
+    else raf = null;
+  };
+  if (!reduced) {
+    addEventListener('scroll', measure, {passive:true});
+    addEventListener('resize', measure);
+    measure();
+  } else drawFrame(0);
+
+  // pattern 3: staggered entry, one observer per group
+  const io = new IntersectionObserver((es) => {
+    es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, {rootMargin:'-12% 0px'});
+  document.querySelectorAll('[data-stagger]').forEach(el => io.observe(el));
+
+  // pattern 2: rail keyboard support + edge fade state
+  rail.addEventListener('keydown', (e) => {
+    const dir = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+    if (!dir) return;
+    e.preventDefault();
+    rail.scrollBy({left: dir * rail.clientWidth * 0.62, behavior:'smooth'});
+  });
+  rail.tabIndex = 0;
+})();
+</script>
+</body>
+</html>

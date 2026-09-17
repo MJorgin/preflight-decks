@@ -6,6 +6,16 @@ on:
   pull_request:
 
 jobs:
+  site-links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Static launch-page references exist
+        run: node scripts/check_site.mjs
+
   dsh-manifest:
     runs-on: ubuntu-latest
     steps:

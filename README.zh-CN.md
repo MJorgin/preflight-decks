@@ -17,7 +17,8 @@
 被选中的方向才做成单文件、固定舞台的 HTML deck——再用 Playwright 证明它在
 1080p 投影仪和手机上放得下，而不是等人走进会议室才发现崩版。
 
-[▶ 在线演示](https://mjorgin.github.io/preflight-decks/) ·
+[▶ 在线落地页](https://mjorgin.github.io/preflight-decks/) ·
+[播放 deck](https://mjorgin.github.io/preflight-decks/deck/) ·
 [打开源文件](./examples/preflight-decks-pitch.html) ·
 [工作原理](#工作原理) ·
 [安装](#安装)
@@ -42,8 +43,10 @@
 
 ## 30 秒试用——不用安装
 
-**[打开在线演示 →](https://mjorgin.github.io/preflight-decks/)** ——
-和 `examples/` 里发布的是同一个文件，直接从 `main` 提供。方向键翻六页。
+**[打开在线落地页 →](https://mjorgin.github.io/preflight-decks/)**
+先看滚动控制的产品介绍；再
+[播放六页 deck](https://mjorgin.github.io/preflight-decks/deck/)。
+打开 deck 后可用方向键翻页。
 
 或者本地跑：
 

@@ -18,7 +18,8 @@ real previews** and pick on pixels. The chosen direction becomes a
 single-file, fixed-stage HTML deck — and a Playwright verifier proves it fits
 a 1080p projector and a phone before anyone walks into the room.
 
-[▶ Live demo](https://mjorgin.github.io/preflight-decks/) ·
+[▶ Live launch page](https://mjorgin.github.io/preflight-decks/) ·
+[Play the deck](https://mjorgin.github.io/preflight-decks/deck/) ·
 [Open the source file](./examples/preflight-decks-pitch.html) ·
 [See it work](#see-it-work) ·
 [How it compares](#how-it-compares) ·
@@ -49,9 +50,10 @@ apple.com's product pages — see
 
 ## Try it in 30 seconds — no install
 
-**[Open the live demo →](https://mjorgin.github.io/preflight-decks/)** — the
-same file that ships in `examples/`, served straight from `main`. Arrow keys
-move through six slides.
+**[Open the live launch page →](https://mjorgin.github.io/preflight-decks/)**
+for the scroll-controlled product tour, then
+[play the six-slide deck](https://mjorgin.github.io/preflight-decks/deck/).
+Arrow keys move through the deck.
 
 Or run it locally:
 

@@ -4,7 +4,7 @@ name: Deploy demo to Pages
 # but cannot create one, so on a fresh fork (or after Pages is disabled) enable
 # it first — Settings -> Pages -> Source: GitHub Actions, or:
 #   gh api -X POST repos/<owner>/<repo>/pages -f build_type=workflow
-# After that this workflow deploys the example deck on every push to main.
+# After that this workflow deploys the launch page and deck on every push to main.
 
 on:
   push:
@@ -28,10 +28,10 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Stage the example deck as the site root
+      - name: Stage the launch page and deck
         run: |
           mkdir -p _site
-          cp examples/preflight-decks-pitch.html _site/index.html
+          cp -R site/. _site/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
