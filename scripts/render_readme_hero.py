@@ -14,12 +14,19 @@ viewport chrome would in a real rig.
 
 All footage is the skill's own output (example deck + verifier artifacts).
 Deterministic, Pillow + ffmpeg only.
+
+The verifier screenshots under `examples/.preflight-check/` are generated, not
+committed, so this script bootstraps them: if they are missing it runs
+`scripts/verify-deck.py` on the example deck first. A fresh clone therefore
+rebuilds the film with one command (Playwright is already a requirement of the
+skill).
 """
 from __future__ import annotations
 
 import math
 import random
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -422,6 +429,29 @@ def scene_frame(index, local):
     return hud(apply_camera(sheet, zoom, cx, cy), LABELS[name], chip=(name == "build"))
 
 
+def ensure_verifier_shots():
+    """The film is cut from the verifier's screenshots; generate them if absent.
+
+    They are deliberately not committed (they are build output), so a fresh
+    clone needs one verification run before the first render — this does it.
+    """
+    needed = ["slide-01-720p.png", "slide-02-phone.png", "slide-03-720p.png",
+              "slide-04-720p.png", "slide-05-720p.png", "slide-06-720p.png"]
+    if all((SHOTS / n).exists() for n in needed):
+        return
+    deck = ROOT / "examples" / "preflight-decks-pitch.html"
+    print(f"verifier shots missing — running scripts/verify-deck.py {deck.relative_to(ROOT)}")
+    subprocess.run([sys.executable, str(ROOT / "scripts" / "verify-deck.py"), str(deck)],
+                   check=True, cwd=ROOT)
+    missing = [n for n in needed if not (SHOTS / n).exists()]
+    if missing:
+        raise SystemExit(
+            "verify-deck.py ran but did not produce: " + ", ".join(missing) +
+            "\nInstall the verifier deps first: python3 -m pip install playwright pillow"
+            " && python3 -m playwright install chromium"
+        )
+
+
 def scene_start(index):
     return sum(n for _, n in SCENES[:index])
 
@@ -468,6 +498,7 @@ def render_frame(g):
 
 def main():
     total = sum(n for _, n in SCENES)
+    ensure_verifier_shots()
     tmp = Path(tempfile.mkdtemp(prefix="pfd-hero-"))
     for g in range(total):
         render_frame(g).save(tmp / f"f{g:04d}.png")
