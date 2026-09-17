@@ -1,0 +1,6 @@
+# DeepSeek Harness bundle patch: mounting this bundle inserts the
+# preflight-decks skill provider. The provider itself registers on
+# `ctx.skills` from index.js; this row is what the profile loads.
+- insert:
+    - id: preflight-decks
+      name: preflight-decks

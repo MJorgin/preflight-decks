@@ -143,6 +143,12 @@ git clone https://github.com/MJorgin/preflight-decks ~/.codex/skills/preflight-d
 
 # Claude Code
 git clone https://github.com/MJorgin/preflight-decks ~/.claude/skills/preflight-decks
+
+# DeepSeek Harness — bundle plugin
+dsh plugin --profile <name> add github:MJorgin/preflight-decks
+
+# DeepSeek Harness — plain skill directory (no plugin step)
+git clone https://github.com/MJorgin/preflight-decks ~/.dsh/skills/preflight-decks
 ```
 
 The skill also needs its chassis peer,
@@ -150,10 +156,13 @@ The skill also needs its chassis peer,
 
 ```bash
 git clone https://github.com/zarazhangrui/frontend-slides ~/.codex/skills/frontend-slides
+# DeepSeek Harness users: ~/.dsh/skills/frontend-slides
 ```
 
 Any agent that reads `SKILL.md` from a folder can use it — point the agent at
 this repository and it will load only the referenced files it needs.
+DeepSeek Harness specifics (discovery roots, the 500-char catalog budget,
+sandbox notes for the verifier) are in [docs/dsh.md](./docs/dsh.md).
 
 ## Say this
 

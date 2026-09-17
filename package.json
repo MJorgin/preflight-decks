@@ -1,0 +1,35 @@
+{
+  "name": "preflight-decks",
+  "version": "0.3.0",
+  "description": "Concept-first HTML presentation director for AI coding agents (Codex, Claude Code, DeepSeek Harness): hard concept gate, fixed-stage single-file deck, scored critique loop, dual-viewport verification.",
+  "type": "module",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "cordis.patch.yml",
+    "SKILL.md",
+    "references",
+    "templates",
+    "scripts",
+    "assets",
+    "examples",
+    "docs",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "dsh-plugin",
+    "deepseek-harness",
+    "skill",
+    "presentations",
+    "html-deck",
+    "codex",
+    "claude-code"
+  ],
+  "license": "MIT",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

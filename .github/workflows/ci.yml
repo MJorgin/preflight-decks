@@ -6,6 +6,16 @@ on:
   pull_request:
 
 jobs:
+  dsh-manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: DSH bundle manifest stays in sync with SKILL.md
+        run: node scripts/check-dsh-manifest.mjs
+
   verifier-check:
     runs-on: ubuntu-latest
     steps:
