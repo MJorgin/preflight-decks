@@ -34,9 +34,11 @@ a 1080p projector and a phone before anyone walks into the room.
 Every frame is this repo's own output — the concept-gate previews, the six-slide
 <a href="./examples/preflight-decks-pitch.html">example deck</a>, and a real verifier
 report: <b>6 slides · 2 viewports · 0 errors · 0 warnings</b>.
-Shot with a camera rig: an establishing micro-push, one 1.3x push-in anchored on the
-chosen direction, parallax drift over the verification wall, and a pull-back to a
-full-view hold.
+Shot on a stage, not on a page: a lateral pan across the three directions, one
+continuous push from a 52% panel to full bleed as the chosen direction becomes the
+deck, and a pull-back to a static full view. The grammar is measured from
+apple.com's product pages — see
+<a href="./references/scroll-camera-recipes.md">the shot catalogue</a>.
 <a href="./assets/hero-concept-gate.mp4">MP4 version</a> ·
 <a href="./docs/hero-film-storyboard.md">storyboard</a>
 </sub></p>

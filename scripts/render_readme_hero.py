@@ -37,19 +37,22 @@ PREVIEWS = ROOT / "examples/previews"
 SHOTS = ROOT / "examples/.preflight-check"
 ASSETS = ROOT / "assets"
 
-AVENIR = "/System/Library/Fonts/Supplemental/Avenir Next.ttc"
-MENLO = "/System/Library/Fonts/Menlo.ttc"
+SF = "/System/Library/Fonts/SFNS.ttf"
+SFMONO = "/System/Library/Fonts/SFNSMono.ttf"
 
-PAPER = (244, 240, 230)
-SHEET = (250, 247, 241)
-INK = (26, 24, 21)
-INK2 = (92, 85, 74)
-INK3 = (150, 143, 128)
-LINE = (202, 194, 178)
-CINNABAR = (170, 48, 26)
-CINNABAR_BRIGHT = (204, 63, 36)
-CODE = (24, 22, 20)
-CODE_PAPER = (232, 226, 214)
+# Direction C · stage light. The names below are the roles the scenes use; the
+# values are the dark stage so no scene code had to be rewritten to restyle it.
+PAPER = (11, 12, 14)            # stage
+SHEET = (24, 26, 31)            # panel
+INK = (244, 245, 248)           # primary text
+INK2 = (163, 168, 176)          # secondary
+INK3 = (120, 126, 136)          # tertiary
+LINE = (58, 62, 70)             # hairline
+CINNABAR = (232, 72, 44)        # signal
+CINNABAR_BRIGHT = (255, 94, 64)
+AMBER = (226, 178, 120)         # eyebrow
+CODE = (22, 24, 28)
+CODE_PAPER = (226, 230, 236)
 
 W, H = 1280, 720
 FPS = 25
@@ -66,19 +69,43 @@ SEAMS = [(90, "defocus", 4), (205, "flash", 5), (310, "defocus", 4), (415, "dip"
 
 
 def font(path, size, index=0):
-    return ImageFont.truetype(path, size=size, index=index)
+    """Kept for the stamp helper; maps Menlo/SF Mono onto SF's variable axes."""
+    f = ImageFont.truetype(path, size=size)
+    try:
+        f.set_variation_by_name("Bold" if index else "Regular")
+    except Exception:
+        pass
+    return f
+
+
+def sf(size, weight):
+    f = ImageFont.truetype(SF, size=size)
+    try:
+        f.set_variation_by_name(weight)
+    except Exception:
+        pass
+    return f
+
+
+def mono(size, weight="Regular"):
+    f = ImageFont.truetype(SFMONO, size=size)
+    try:
+        f.set_variation_by_name(weight)
+    except Exception:
+        pass
+    return f
 
 
 F = {
-    "h1": font(AVENIR, 60, 8),
-    "h2": font(AVENIR, 34, 2),
-    "brief": font(AVENIR, 31, 7),
-    "mono": font(MENLO, 19, 0),
-    "mono_b": font(MENLO, 19, 1),
-    "mono_s": font(MENLO, 15, 0),
-    "mono_xs": font(MENLO, 13, 0),
-    "mono_xsb": font(MENLO, 13, 1),
-    "term_l": font(MENLO, 22, 1),
+    "h1": sf(60, "Bold"),
+    "h2": sf(34, "Semibold"),
+    "brief": sf(31, "Regular"),
+    "mono": mono(19),
+    "mono_b": mono(19, "Medium"),
+    "mono_s": mono(15),
+    "mono_xs": mono(13),
+    "mono_xsb": mono(13, "Medium"),
+    "term_l": mono(22, "Bold"),
 }
 
 
@@ -125,7 +152,17 @@ def center_tracked(d, cx, y, text, fnt, fill, tracking=0):
 
 
 def stage():
+    """Stage-light background: black field, one soft wedge, film grain added later."""
     img = Image.new("RGBA", (W, H), PAPER + (255,))
+    wedge = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    ImageDraw.Draw(wedge).polygon([(0, 0), (int(W * 0.72), 0), (int(W * 0.30), H), (0, H)],
+                                  fill=(255, 252, 246, 22))
+    img.alpha_composite(wedge.filter(ImageFilter.GaussianBlur(64)))
+    glow = Image.radial_gradient("L").resize((int(W * 0.66), int(H * 0.72)), Image.LANCZOS)
+    glow = glow.point(lambda v: max(0, 255 - v)).point(lambda v: int(v * 16 / 255))
+    halo = Image.new("RGBA", glow.size, (255, 244, 226, 0))
+    halo.putalpha(glow)
+    img.alpha_composite(halo, (int(W * 0.04), int(H * 0.04)))
     return img, ImageDraw.Draw(img)
 
 
@@ -134,11 +171,12 @@ def hud(img, label, chip=False):
     d = ImageDraw.Draw(img)
     if chip:
         w = int(tracked_w(d, label, F["mono_xsb"], 3)) + 44
-        d.rounded_rectangle((40, 34, 40 + w, 74), radius=4, fill=PAPER + (238,))
-        tracked(d, (62, 46), label, F["mono_xsb"], CINNABAR, 3)
+        d.rounded_rectangle((40, 34, 40 + w, 74), radius=4, fill=SHEET + (242,),
+                            outline=(255, 255, 255, 34), width=2)
+        tracked(d, (62, 46), label, F["mono_xsb"], AMBER, 3)
     else:
         d.rectangle((46, 46, 55, 55), fill=CINNABAR)
-        tracked(d, (68, 44), label, F["mono_xsb"], CINNABAR, 3)
+        tracked(d, (68, 44), label, F["mono_xsb"], AMBER, 3)
     sig = "MJORGIN/PREFLIGHT-DECKS"
     d.text((W - 64 - d.textlength(sig, font=F["mono_xs"]), 46), sig, font=F["mono_xs"], fill=INK3)
     d.line((64, 668, W - 64, 668), fill=LINE, width=1)
@@ -152,7 +190,7 @@ def stamp(text1, text2, scale=1.0, alpha=235):
     col = CINNABAR_BRIGHT + (alpha,)
     sd.rounded_rectangle((8, 8, w - 8, h - 8), radius=6, outline=col, width=4)
     sd.rounded_rectangle((17, 17, w - 17, h - 17), radius=4, outline=col, width=1)
-    f1, f2 = font(MENLO, 26, 1), font(MENLO, 19, 1)
+    f1, f2 = font(SFMONO, 26, 1), font(SFMONO, 19, 1)
     sd.text(((w - tracked_w(sd, text1, f1, 2)) / 2, 40), text1, font=f1, fill=col)
     sd.text(((w - tracked_w(sd, text2, f2, 4)) / 2, 88), text2, font=f2, fill=col)
     rng = random.Random(412)
@@ -195,12 +233,14 @@ def cam_intake(f, n):
 
 
 def cam_gate(f, n):
-    start = 32
-    if f < start:
-        return 1.0, W / 2, H / 2
-    t = ease_in_out((f - start) / CAM_PUSH_FRAMES)
+    # Apple's horizontal-rail language: pan across the three directions first,
+    # then push in on the one that gets chosen.
+    pan_end, push_start = 40, 44
+    if f < push_start:
+        return 1.0, W / 2 + 320 * ease_in_out(f / pan_end), H / 2
+    t = ease_in_out((f - push_start) / CAM_PUSH_FRAMES)
     return (1.0 + 0.3 * t,
-            W / 2 + (THIRD_X - W / 2) * t,
+            (W / 2 + 320) + (THIRD_X - (W / 2 + 320)) * t,
             H / 2 + (THIRD_Y - H / 2) * t)
 
 
@@ -298,42 +338,29 @@ def shot_gate(f, n):
     return img
 
 
-BUILD_SHOTS = [(1, "full"), (3, "card"), (4, "full")]
-BUILD_LEN = 35
-
-
 def shot_build(f, n):
-    i = min(f // BUILD_LEN, 2)
-    local = f % BUILD_LEN
-    num, kind = BUILD_SHOTS[i]
-    slide = Image.open(SHOTS / f"slide-{num:02d}-720p.png").convert("RGB")
-    settle = 1.03 - 0.03 * ease_out(local / 5)
+    """The chosen direction becomes the deck: one continuous push, 52% -> 100%.
 
-    if kind == "full":
-        img = Image.new("RGBA", (W, H), PAPER + (255,))
-        sw, sh = int(W * settle), int(H * settle)
-        img.paste(slide.resize((sw, sh), Image.LANCZOS), ((W - sw) // 2, (H - sh) // 2))
-    else:
-        img, d = stage()
-        cw, ch = int(W * 0.78 * settle), int(H * 0.78 * settle)
-        cx, cy = (W - cw) // 2, (H - ch) // 2
-        shadow = Image.new("RGBA", (cw + 48, ch + 48), (0, 0, 0, 0))
-        ImageDraw.Draw(shadow).rounded_rectangle((24, 28, cw + 24, ch + 28), radius=6,
-                                                 fill=(60, 52, 40, 46))
-        img.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(9)), (cx - 24, cy - 24))
-        img.alpha_composite(slide.resize((cw, ch), Image.LANCZOS).convert("RGBA"), (cx, cy))
-        d.rectangle((cx - 1, cy - 1, cx + cw, cy + ch), outline=LINE, width=2)
-
-    # Projector-advance blink on the two internal cuts.
-    flash = 0.0
-    if i < 2 and local == BUILD_LEN - 1:
-        flash = 0.42
-    elif i > 0 and local == 0:
-        flash = 0.42
-    elif i > 0 and local == 1:
-        flash = 0.16
-    if flash:
-        img.alpha_composite(Image.new("RGBA", (W, H), PAPER + (int(255 * flash),)))
+    The move is authored into the render rather than faked with a CSS scale —
+    the film *is* the camera move (references/scroll-camera-recipes.md, #1).
+    """
+    t = ease_in_out((f / n - 0.18) / (0.72 - 0.18))
+    w = int(W * (0.52 + 0.48 * t))
+    slide = Image.open(SHOTS / "slide-01-720p.png").convert("RGB")
+    h = int(w * slide.height / slide.width)
+    x, y = (W - w) // 2, (H - h) // 2
+    panel = slide.resize((w, h), Image.LANCZOS).convert("RGBA")
+    mask = Image.new("L", (w, h), 0)
+    ImageDraw.Draw(mask).rounded_rectangle((0, 0, w - 1, h - 1),
+                                           radius=max(6, int(w * 0.014)), fill=255)
+    panel.putalpha(mask)
+    img, d = stage()
+    halo = Image.new("RGBA", (w + 240, h + 240), (0, 0, 0, 0))
+    halo.paste(Image.new("RGBA", (w, h), (0, 0, 0, 205)), (120, 120), mask)
+    img.alpha_composite(halo.filter(ImageFilter.GaussianBlur(46)), (x - 120, y - 120))
+    d.rounded_rectangle((x - 5, y - 5, x + w + 4, y + h + 4),
+                        radius=int(max(8, w * 0.018)), outline=(255, 255, 255, 42), width=2)
+    img.alpha_composite(panel, (x, y))
     return img
 
 
@@ -513,10 +540,10 @@ def main():
     # turn the paper texture into noise.
     palette = tmp / "pal.png"
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(mp4),
-                    "-vf", "fps=12.5,scale=960:540,palettegen=max_colors=128:stats_mode=single",
+                    "-vf", "fps=12.5,scale=960:540,palettegen=max_colors=48:stats_mode=single",
                     "-frames:v", "1", "-update", "1", str(palette)], check=True)
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(mp4), "-i", palette,
-                    "-lavfi", "fps=12.5,scale=960:540,paletteuse=dither=bayer:bayer_scale=5",
+                    "-lavfi", "fps=12.5,scale=960:540,paletteuse=dither=none",
                     str(gif)], check=True)
     print(f"frames {total}  duration {total / FPS:.2f}s")
     for p in (mp4, gif):
