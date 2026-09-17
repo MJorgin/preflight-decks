@@ -1,113 +1,201 @@
-# Preflight Decks · 概念先行的幻灯片导演
+<div align="center">
 
-[![CI](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+# ✈️ Preflight Decks
 
-![Preflight Decks 社交卡片](./assets/social-card.png)
+### 给 AI 做的幻灯片，装一道概念门。
 
-**概念先行的 HTML 幻灯片导演 skill。** 它解决的不是「丑」，而是上游失败：
-没有观点、三版方案只是同一骨架换色、或者只在作者电脑上好看，到投影仪和
-手机上就溢出崩版。
+[![CI](https://github.com/MJorgin/preflight-decks/actions/workflows/ci.yml/badge.svg)](https://github.com/MJorgin/preflight-decks/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![Agent: Codex](https://img.shields.io/badge/agent-Codex-685DFF)
+![Agent: Claude Code](https://img.shields.io/badge/agent-Claude%20Code-D97757)
+![Agent: DSH](https://img.shields.io/badge/agent-DeepSeek%20Harness-2D664A)
+![Agent: any SKILL.md](https://img.shields.io/badge/agent-any%20SKILL.md%20reader-888)
 
-本 skill 是一个薄编排层：判断力与机械验收归自己，交付底盘复用
-[frontend-slides](https://github.com/zarazhangrui/frontend-slides)（MIT）——
-固定 1920×1080 舞台、单文件零依赖、就地编辑、PDF/链接导出、PPTX 转换。
+[**English**](README.md) · **简体中文**
 
-## 看它工作
+动手做 deck 之前，先拿到**三个结构真正不同的真实预览**，在像素上拍板。
+被选中的方向才做成单文件、固定舞台的 HTML deck——再用 Playwright 证明它在
+1080p 投影仪和手机上放得下，而不是等人走进会议室才发现崩版。
 
-同一个简介，产出三版**结构真正不同**的真实预览——不是同一骨架换三种颜色。
-你在像素上拍板，只有被选中的方向才会被做成完整 deck：
+[▶ 在线演示](https://mjorgin.github.io/preflight-decks/) ·
+[打开源文件](./examples/preflight-decks-pitch.html) ·
+[工作原理](#工作原理) ·
+[安装](#安装)
 
-![三版概念门预览：安全预设、大胆模板、自定义 wildcard](./assets/demo-previews.png)
+</div>
 
-被选中的 wildcard 方向——一套「发布前飞行手册」——扩成 6 页 pitch deck。
-下面这个 GIF 就是用仓库里的真实示例文件渲染的：
+![同一个需求变成三个结构真正不同的真实预览，被选中的方向做成六页 deck，并在投影仪和手机尺寸下通过验收](./assets/hero-concept-gate.gif)
 
-[![6 页示例 deck](./assets/hero-deck.gif)](./examples/preflight-decks-pitch.html)
+<p align="center"><sub>
+20 秒 · 需求 → 三个真实方向 → 选定后成稿 → 双视口验收。
+每一帧都是本仓库自己的产物——概念门预览、六页
+<a href="./examples/preflight-decks-pitch.html">示例 deck</a>，以及真实的验收报告：
+<b>6 页 · 2 个视口 · 0 错误 · 0 警告</b>。
+用摄影机拍的：开场定场微推、一次对准选中方向的 1.3x 推近、验收墙上的视差漂移，
+最后拉回全景停稳。
+<a href="./assets/hero-concept-gate.mp4">MP4 版</a> ·
+<a href="./docs/hero-film-storyboard.md">分镜卡</a>
+</sub></p>
 
-每份 deck 随后都要通过 Playwright 在投影仪和手机尺寸下的机械验收。示例
-deck 的成绩是 **6 页、0 错误、0 警告**：
+> **自己先吃狗粮。** 这份 README 里的 deck 就是走本仓库的流程做出来的；
+> README 这一页本身也过了它强制的那道检查——「看渲染结果，不看想象」。
 
-![1280x720 与 390x844 双视口验收联系表](./assets/verification-contact-sheet.png)
+## 30 秒试用——不用安装
 
-30 秒体验：用浏览器打开
-[`examples/preflight-decks-pitch.html`](./examples/preflight-decks-pitch.html)
-（方向键翻页）。三版概念门预览在 [`examples/previews/`](./examples/previews/)。然后运行：
+**[打开在线演示 →](https://mjorgin.github.io/preflight-decks/)** ——
+和 `examples/` 里发布的是同一个文件，直接从 `main` 提供。方向键翻六页。
+
+或者本地跑：
 
 ```bash
+# 1. 用浏览器打开 deck，方向键翻六页
+open examples/preflight-decks-pitch.html
+
+# 2. 跑一遍你的 deck 也会经历的验收
 python3 scripts/verify-deck.py examples/preflight-decks-pitch.html
 ```
 
-## 为什么需要它
+一个自包含的 HTML 文件。没有构建步骤、不联网、不依赖框架。成稿前的三个方向在
+[`examples/previews/`](./examples/previews/)。
 
-Deck skill 大多在卖模板。真正的默认失败模式不是不美观，而是：做得不差但
-没观点，或者版式只在作者屏幕上成立。本 skill 把三件事变强制：
+## 为什么要一道门？
 
-1. **概念门**：先写出值得一讲的主张和从内容长出的视觉母题，并在全 deck
-   之前看到三版结构真正不同的真实预览。
-2. **评分回路**：每一版都基于渲染截图打分；概念不达标直接否决，执行再精致
-   也救不回来。
-3. **防弹底盘**：每份 deck 都是单文件固定舞台 HTML，由自动截图检查证明它
-   在 1280×720 与 390×844 下都成立。
+Agent 做 deck 很快，但 deck 翻车的地方一直没变：
 
-## 流程
+1. **没话说**——精致的幻灯片，包着一句没人真的想说的话。
+2. **三个皮肤**——所谓「风格选项」是同一副骨架换了三次颜色。
+3. **只在一块屏幕上好看**——在你自己电脑上很美，到投影仪或手机上就溢出崩版。
+
+Preflight Decks 让这三件事*在结构上不可能发生*：三个**结构不同**的渲染方向没有选完，
+就不存在完整 deck；每一稿都从截图上打分，概念不行直接否决，像素再漂亮也没用；
+每一份成稿都在投影仪和手机尺寸下机械验收。
+
+它是一个很薄的判断层，交付底盘复用
+[frontend-slides](https://github.com/zarazhangrui/frontend-slides)（MIT）——
+固定 1920×1080 舞台、单 HTML 文件、就地编辑、PDF／链接导出、PPTX 转换。
+
+## 工作原理
 
 ```
-0 需求清点   真实内容清单 + 演讲型/阅读型密度
-1 概念门     一句话主张 → 三版真实预览 → 用户拍板 → Gate 文件
-2 制作       基于 frontend-slides 固定舞台生产全 deck
-3 评分回路   六维打分 → 修改 → 复评（达标线 7.5，无单项低于 6）
-4 机械验收   scripts/verify-deck.py 零硬错误
-5 交付       单个 HTML（可选 PDF / 在线链接）
+0  需求收集   内容清点 + 讲与读的密度分配
+1  概念门     一句能争论的话 → 3 个真实预览 → 你来选 → 落档
+2  构建       在 frontend-slides 固定舞台上做成完整 deck
+3  评审       从截图给六个维度打分（及格线 7.5，单项不低于 6）
+4  验收       scripts/verify-deck.py —— 有硬错误就不交付
+5  交付       一个 HTML 文件（可选 PDF／在线链接）
 ```
+
+## 看它怎么工作
+
+### 1. 三个真实方向——不是三次换色
+
+同一个需求渲染三版。只有被选中的那一版会被做成完整 deck。
+
+![三个概念门预览：安全预设、大胆模板、自定义飞行手册，其中自定义方向被标记为选中](./assets/demo-previews.png)
+
+### 2. 被选中的方向变成 deck
+
+被选中的自定义方向——一套「发布前飞行检查手册」——扩成六页 pitch deck，全在一个文件里：
+
+[![从单文件示例 HTML 渲染出的六页 deck](./assets/hero-deck.gif)](./examples/preflight-decks-pitch.html)
+
+### 3. 在它真正要面对的场合上验收
+
+每份 deck 都会在 **1280×720** 和 **390×844** 下截图，检查溢出、元素跑出舞台、
+空白页和残留占位符：
+
+![验收联系表：六页投影仪尺寸、前三页手机尺寸，全部干净](./assets/verification-contact-sheet.png)
+
+退出码 `0` = 通过，`2` = 硬错误，`1` = 工具问题——所以这个检查能进 CI，而不是靠信任。
+
+## 这道门加了什么
+
+| 环节 | skill 强制要求 |
+| --- | --- |
+| **概念门** | 一句值得争论的话、一个从内容里长出来的视觉母题，以及在做完整 deck 之前先渲染三个*结构不同*的预览 |
+| **评审环** | 从真实截图给六个维度打分；概念质量可以一票否决 |
+| **底盘** | 通过 frontend-slides 产出单个固定舞台 1920×1080 HTML 文件——无框架、可移植、可就地编辑 |
+| **验收** | Playwright 在投影仪和手机尺寸下检查溢出、越界、空白页与占位符，并给出 CI 友好的退出码 |
 
 ## 安装
 
+验收器需要 Playwright 和 Chromium：
+
 ```bash
-# 交付底盘（必需的 peer skill）
-git clone https://github.com/zarazhangrui/frontend-slides \
-  ~/.codex/skills/frontend-slides
-
-# 本 skill
-git clone https://github.com/MJorgin/preflight-decks \
-  ~/.codex/skills/preflight-decks
-
-# 验收脚本依赖
 python3 -m pip install playwright pillow
 python3 -m playwright install chromium
 ```
 
-## 验收脚本
-
-可对任意固定舞台 HTML deck 单独运行：
+然后克隆进你的 agent skill 目录：
 
 ```bash
-python3 scripts/verify-deck.py path/to/deck.html
+# Codex（个人）
+git clone https://github.com/MJorgin/preflight-decks ~/.codex/skills/preflight-decks
+
+# Claude Code
+git clone https://github.com/MJorgin/preflight-decks ~/.claude/skills/preflight-decks
+
+# DeepSeek Harness —— 作为 bundle 插件
+dsh plugin --profile <name> add github:MJorgin/preflight-decks
+
+# DeepSeek Harness —— 作为普通 skill 目录（无需插件步骤）
+git clone https://github.com/MJorgin/preflight-decks ~/.dsh/skills/preflight-decks
 ```
 
-产物写入 `.preflight-check/`：逐页截图（720p + 手机）、联系表、
-`report.json`。检查项：舞台在手机上等比缩放且保持 16:9、无溢出/出界、
-无空白页、无 lorem/占位符，并对通用字体栈给出警告。
+它还需要配套的底盘 skill
+[frontend-slides](https://github.com/zarazhangrui/frontend-slides)：
 
-退出码：`0` 通过（允许警告）、`2` 存在硬错误、`1` 工具错误。
+```bash
+git clone https://github.com/zarazhangrui/frontend-slides ~/.codex/skills/frontend-slides
+# DeepSeek Harness 用户：~/.dsh/skills/frontend-slides
+```
 
-## 边界
+任何能从目录里读取 `SKILL.md` 的 agent 都能用——把仓库指给它，它只会加载需要的那几个文件。
+DeepSeek Harness 的细节（发现根目录、500 字符目录预算、验收器的沙箱注意事项）见
+[docs/dsh.md](./docs/dsh.md)。
 
-只做幻灯片：pitch、演讲、教学、内部汇报、PPTX → HTML。不做网站、产品原型
-或独立产品宣传片。
+## 可以这样对它说
+
+```text
+帮我做一份 X 的 pitch deck。先别动手，
+给我三个结构真正不同的真实方向，选完再建。
+```
+
+```text
+从渲染截图评审这几页，六个维度都打分，
+然后重跑投影仪 + 手机的验收。
+```
+
+## 仓库里有什么
+
+```text
+SKILL.md                         编排契约
+references/concept-gate.md       硬门 + 三方向协议
+references/critique-rubric.md    六个评分维度、否决规则
+references/deck-verification.md  「验收」验的是什么、为什么
+templates/direction-approved.md  用户签字确认的落档文件
+scripts/verify-deck.py           Playwright 双视口验收器
+scripts/render_readme_hero.py    重出上面那支英雄片
+examples/                        走完全流程的示例 deck + 三个方向的预览
+```
+
+## 适用范围
+
+只做 deck——pitch、演讲、教学、内部汇报、PPTX → HTML。
+不做网站、产品原型，也不做独立产品片。
 
 ## 致谢
 
-站在两个 MIT 项目肩膀上的薄观点层：
+一个很薄、有主张的层，站在两个 MIT 项目上：
 
-- [zarazhangrui/frontend-slides](https://github.com/zarazhangrui/frontend-slides)：
-  固定舞台单文件底盘、模板与导出工具。
-- [alchaincyf/huashu-design](https://github.com/alchaincyf/huashu-design)：
-  概念先行方法论、评审 rubric 与验收思维，蒸馏在本项目 references 中。
+- [zarazhangrui/frontend-slides](https://github.com/zarazhangrui/frontend-slides)——
+  固定舞台单文件 deck 底盘、模板、导出工具。
+- [alchaincyf/huashu-design](https://github.com/alchaincyf/huashu-design)——
+  references 里的概念先行方法论与评审思维。
 
-同作者另一个项目：[github-launch-studio](https://github.com/MJorgin/github-launch-studio)，
-面向开源仓库发布就绪度的 Codex skill。本项目为独立社区项目，与上述上游无
-附属关系。
+来自 [github-launch-studio](https://github.com/MJorgin/github-launch-studio) 作者的独立社区项目，
+与上述两个上游没有隶属关系。
 
-## 许可证
+## 许可
 
-MIT
+[MIT](./LICENSE)

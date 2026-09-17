@@ -11,6 +11,8 @@
 ![Agent: DSH](https://img.shields.io/badge/agent-DeepSeek%20Harness-2D664A)
 ![Agent: any SKILL.md](https://img.shields.io/badge/agent-any%20SKILL.md%20reader-888)
 
+**English** · [**简体中文**](README.zh-CN.md)
+
 Before your agent builds the deck, you get **three structurally different
 real previews** and pick on pixels. The chosen direction becomes a
 single-file, fixed-stage HTML deck — and a Playwright verifier proves it fits
