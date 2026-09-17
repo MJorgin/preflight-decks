@@ -178,6 +178,7 @@ references/critique-rubric.md    六个评分维度、否决规则
 references/deck-verification.md  「验收」验的是什么、为什么
 templates/direction-approved.md  用户签字确认的落档文件
 scripts/verify-deck.py           Playwright 双视口验收器
+scripts/check_launch_motion.py   落地页正常/减少动态模式验收
 scripts/render_readme_hero.py    重出上面那支英雄片
 examples/                        走完全流程的示例 deck + 三个方向的预览
 ```

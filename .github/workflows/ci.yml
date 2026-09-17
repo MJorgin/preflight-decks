@@ -41,3 +41,5 @@ jobs:
           python -m playwright install --with-deps chromium
       - name: Verifier accepts a correct fixed-stage deck
         run: python scripts/verify-deck.py tests/fixtures/minimal-fixed-stage.html
+      - name: Launch page stays static in reduced-motion mode
+        run: python scripts/check_launch_motion.py

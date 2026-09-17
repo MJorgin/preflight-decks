@@ -170,7 +170,9 @@ landing page, or any scroll-driven presentation of the deck — read
 measured Apple patterns (pinned scroll-scrubbed hero, horizontal snap rails,
 copy that swaps while the product stays, alternating shot widths) and the
 small-to-large push recipe, plus the rule this repository learned the hard
-way: text must never sit on top of imagery that contains its own text.
+way: text must never sit on top of imagery that contains its own text. A dark
+launch surface also needs staged texture — restrained gradient light, fine
+grain, and optional sparse particles/grid — never a flat black void.
 
 ## Hard rules (quick checklist)
 
@@ -181,4 +183,6 @@ way: text must never sit on top of imagery that contains its own text.
 - [ ] Single 1920×1080 fixed-stage HTML, inline everything, phone scales whole
 - [ ] Critique scored from screenshots; bar met (≥7.5, nothing <6)
 - [ ] `verify-deck.py` exits 0; cover test passed on three slides
+- [ ] Any launch surface is checked in reduced motion: particles, hero frames,
+  reveals, and hover motion collapse to static pixels with no horizontal overflow
 - [ ] No lorem ipsum, invented data, fake logos, or generic display defaults

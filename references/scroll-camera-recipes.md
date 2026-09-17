@@ -9,6 +9,35 @@ not estimated from screenshots.
 Two pages, for scale: **37.3 viewports of scroll** (iPhone 18 Pro, 33,531px)
 and **34.3 viewports** (MacBook Pro, 30,873px).
 
+## Stage texture: the background is a set, not a paint bucket
+
+A flat black page reads as unfinished even when the foreground is correct.
+Premium product pages give the stage measurable depth before the product
+enters:
+
+- at least one large, low-contrast radial wash plus a cooler counter-light;
+- a fixed film-grain/noise layer around 4–6% opacity, never tiled loudly;
+- optional sparse particles or constellation lines (budget: ~82 desktop,
+  ~42 mobile) that drift slower than the reader's eye and sit below all copy;
+- one perspective grid or technical field in the hero, masked to fade before
+  it reaches body text;
+- double-bezel product frames: translucent outer tray, hairline, inset
+  highlight, then the media itself.
+
+Keep the palette to OLED black, one warm light, and one brand signal color.
+The texture should make the headline feel lit by the scene; if it raises
+perceived complexity or competes with text, reduce opacity rather than adding
+more effects. Particle/noise layers are fixed, pointer-events none, remain
+static under `prefers-reduced-motion`, and must not create horizontal
+overflow or change the media's exact 16:9 crop.
+
+Reduced-motion acceptance is mechanical, not vibes: after emulating
+`prefers-reduced-motion: reduce`, wait 500ms, capture the particle canvas and
+hero frame, scroll roughly one viewport, wait again, and require both captures
+to be unchanged. The hero poster must remain fully opaque, the film frame must
+stay at 0, reveal transforms must collapse, and both desktop and mobile
+viewports must report zero horizontal overflow.
+
 ## The catalogue
 
 ### 1 · Pinned stage + scroll-scrubbed video

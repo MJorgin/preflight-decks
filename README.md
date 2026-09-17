@@ -217,6 +217,7 @@ references/critique-rubric.md    six scored dimensions, veto rules
 references/deck-verification.md  what "verified" means and why
 templates/direction-approved.md  the gate file the user signs off on
 scripts/verify-deck.py           Playwright dual-viewport verifier
+scripts/check_launch_motion.py   normal/reduced-motion launch-page gate
 scripts/render_readme_hero.py    rebuilds the hero film above
 examples/                        the dogfooded deck + its three previews
 ```

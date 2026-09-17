@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Preflight Decks gives AI-built presentations a concept gate: three real rendered directions, a chosen direction, then projector and phone verification.">
-<meta name="theme-color" content="#0b0c0e">
+<meta name="theme-color" content="#050609">
 <link rel="canonical" href="https://mjorgin.github.io/preflight-decks/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Preflight Decks">
@@ -20,16 +20,32 @@
 <title>Preflight Decks — concept-first HTML presentations</title>
 <style>
   :root{
-    --stage:#0b0c0e; --ink:#f4f5f8; --mute:#a4a8b0; --signal:#e8482c; --amber:#e2b278;
-    --hair:rgba(255,255,255,.14); --col:68%; --media:87.5%;
+    --stage:#050609; --ink:#f6f7fb; --mute:#a7abb5; --signal:#e8482c; --amber:#e2b278;
+    --hair:rgba(255,255,255,.12); --col:68%; --media:87.5%;
     --ease:cubic-bezier(.32,.72,0,1); --slow:cubic-bezier(.65,0,.35,1);
     color-scheme:dark;
   }
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
-  body{margin:0;background:var(--stage);color:var(--ink);
+  body{margin:0;overflow-x:hidden;background:var(--stage);color:var(--ink);
        font:400 18px/1.5 "SF Pro Text",-apple-system,"Helvetica Neue",Arial,sans-serif;
        -webkit-font-smoothing:antialiased}
+  ::selection{background:rgba(232,72,44,.34);color:#fff}
+  a:focus-visible,[tabindex]:focus-visible{outline:2px solid rgba(226,178,120,.82);
+    outline-offset:4px;border-radius:6px}
+  body::before,body::after{content:"";position:fixed;inset:0;pointer-events:none}
+  body::before{z-index:0;
+    background:
+      radial-gradient(900px circle at 77% -7%,rgba(232,72,44,.18),transparent 35%),
+      radial-gradient(760px circle at 13% 12%,rgba(226,178,120,.14),transparent 33%),
+      radial-gradient(880px circle at 48% 112%,rgba(83,207,255,.11),transparent 43%),
+      radial-gradient(1180px circle at 50% 43%,rgba(255,255,255,.035),transparent 58%),
+      linear-gradient(115deg,rgba(255,255,255,.052),transparent 27% 63%,rgba(104,211,255,.035)),
+      linear-gradient(180deg,#080a10 0%,#050609 47%,#040508 100%)}
+  body::after{z-index:0;opacity:.055;mix-blend-mode:screen;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E")}
+  .atmosphere{position:fixed;inset:0;z-index:0;width:100%;height:100%;pointer-events:none;
+    opacity:.82;mix-blend-mode:screen}
   h1,h2{font-family:"SF Pro Display",-apple-system,"Helvetica Neue",Arial,sans-serif;margin:0}
   .eyebrow{font:500 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.28em;
            text-transform:uppercase;color:var(--amber)}
@@ -37,22 +53,55 @@
   .copy{width:min(var(--col),980px)}
 
   /* ── 1 · pinned stage + scroll-scrubbed hero ─────────────────────────── */
-  .hero{height:200vh;position:relative}
+  .hero,section,footer{position:relative;z-index:1}
+  .hero{height:200vh}
   .stage{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;
          align-items:center;justify-content:center;gap:2.2vh;overflow:hidden;padding:3vh 0}
   .stage::before{content:"";position:absolute;inset:0;
-    background:linear-gradient(115deg,rgba(255,252,246,.10),transparent 52%);pointer-events:none}
-  .film{position:relative;height:min(46vh,52vw);aspect-ratio:16/9;width:auto;max-width:92vw;
-        margin:0 auto;border-radius:14px;overflow:hidden;background:#000;isolation:isolate}
+    background:
+      radial-gradient(circle at 50% 38%,rgba(226,178,120,.12),transparent 23%),
+      radial-gradient(circle at 58% 64%,rgba(232,72,44,.13),transparent 34%),
+      radial-gradient(circle at 16% 10%,rgba(104,211,255,.075),transparent 28%),
+      linear-gradient(180deg,rgba(255,255,255,.048),transparent 43%);pointer-events:none}
+  .stage::after{content:"";position:absolute;left:50%;bottom:-18%;width:130%;height:62%;
+    transform:translateX(-50%) perspective(780px) rotateX(63deg);transform-origin:bottom center;
+    background-image:
+      linear-gradient(rgba(255,255,255,.07) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(255,255,255,.07) 1px,transparent 1px);
+    background-size:72px 72px;
+    -webkit-mask-image:radial-gradient(ellipse at center,#000 0%,transparent 70%);
+    mask-image:radial-gradient(ellipse at center,#000 0%,transparent 70%);
+    opacity:.42;pointer-events:none}
+  .film-shell{--film-pad:clamp(6px,.75vw,10px);position:relative;z-index:2;
+    width:min(92vw,calc(min(43vh,50vw)*16/9 + var(--film-pad)*2));
+    padding:var(--film-pad);
+    border-radius:23px;border:1px solid rgba(255,255,255,.16);
+    background:linear-gradient(145deg,rgba(255,255,255,.16),rgba(255,255,255,.035) 42%,rgba(255,255,255,.055));
+    box-shadow:0 50px 120px rgba(0,0,0,.64),0 0 74px rgba(232,72,44,.13),inset 0 1px 1px rgba(255,255,255,.20)}
+  .film-shell::before{content:"";position:absolute;inset:1px;border-radius:inherit;pointer-events:none;
+    background:linear-gradient(115deg,rgba(255,255,255,.16),transparent 26%,transparent 74%,rgba(255,255,255,.08))}
+  .film{position:relative;height:auto;aspect-ratio:16/9;width:100%;
+        border-radius:15px;overflow:hidden;background:#000;isolation:isolate;
+        box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+  .film::after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;
+    background:
+      radial-gradient(circle at 50% -10%,rgba(255,255,255,.16),transparent 38%),
+      linear-gradient(180deg,rgba(255,255,255,.10),transparent 22%,transparent 76%,rgba(0,0,0,.30))}
   .film img,.film canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
   .film img.last{z-index:0} .film canvas{z-index:1} .film.ready img.first{opacity:0}
   .film img.first{z-index:2;transition:opacity .4s var(--ease)}
-  .hero-copy{position:relative;width:min(87.5%,1440px);padding:0 32px;pointer-events:none;text-align:center}
+  .hero-copy{position:relative;z-index:2;width:min(87.5%,1440px);padding:0 32px;pointer-events:none;text-align:center}
+  .hero-copy .eyebrow{display:inline-flex;padding:9px 12px;border-radius:999px;
+    border:1px solid rgba(226,178,120,.26);background:rgba(255,255,255,.055);color:#f0d4ad;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 0 34px rgba(226,178,120,.08)}
   .hero-copy h1{font-size:clamp(32px,4.4vw,64px);font-weight:700;letter-spacing:-.02em;line-height:1.05}
   .hero-copy h1 em{font-style:normal;color:var(--signal)}
   .hero-copy p{color:var(--mute);font-size:clamp(14px,1.1vw,17px);margin:.7em auto 0;max-width:52ch}
-  .scrub-meter{position:relative;width:min(60%,720px);height:2px;background:rgba(255,255,255,.16);margin-top:1.6vh}
-  .scrub-meter i{display:block;height:100%;width:0;background:var(--signal)}
+  .scrub-meter{position:relative;z-index:2;width:min(60%,720px);height:3px;border-radius:999px;
+    background:rgba(255,255,255,.12);margin-top:1.6vh;overflow:hidden;
+    box-shadow:0 0 28px rgba(232,72,44,.18)}
+  .scrub-meter i{display:block;height:100%;width:0;border-radius:inherit;background:var(--signal);
+    box-shadow:0 0 14px rgba(232,72,44,.85)}
 
   section{padding:140px 0}
   .head{display:flex;gap:28px;align-items:baseline;margin-bottom:48px}
@@ -64,12 +113,16 @@
         padding:8px 32px 28px;margin:0 auto;width:min(100%,1440px);
         scrollbar-width:none;position:relative}
   .rail::-webkit-scrollbar{display:none}
-  .rail figure{flex:0 0 62%;margin:0;scroll-snap-align:center;position:relative}
-  .rail img{width:100%;border-radius:12px;display:block;border:1px solid var(--hair)}
+  .rail figure{flex:0 0 62%;margin:0;scroll-snap-align:center;position:relative;padding:8px;
+    border:1px solid rgba(255,255,255,.10);border-radius:19px;
+    background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.028));
+    box-shadow:0 28px 80px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.10)}
+  .rail img{width:100%;border-radius:13px;display:block;border:1px solid rgba(255,255,255,.08)}
   .rail figcaption{margin-top:14px;display:flex;justify-content:space-between;
     font:500 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;text-transform:uppercase;color:var(--mute)}
   .rail figcaption b{color:var(--ink);font-weight:600}
-  .rail figure.chosen img{border-color:var(--signal)}
+  .rail figure.chosen{border-color:rgba(232,72,44,.55);box-shadow:0 28px 90px rgba(0,0,0,.42),0 0 42px rgba(232,72,44,.16),inset 0 1px 0 rgba(255,255,255,.10)}
+  .rail figure.chosen img{border-color:rgba(232,72,44,.42)}
   .rail figure.chosen figcaption b{color:var(--signal)}
   .rail-fade{position:relative}
   .rail-fade::after{content:"";position:absolute;top:0;right:0;bottom:28px;width:160px;pointer-events:none;
@@ -77,8 +130,11 @@
 
   /* ── 4 · copy swaps while the product stays ─────────────────────────── */
   .swap{display:grid;grid-template-columns:52% 44%;gap:4%;align-items:start}
-  .swap .pinned{position:sticky;top:15vh}
-  .swap .pinned img{width:100%;border-radius:12px;border:1px solid var(--hair)}
+  .swap .pinned{position:sticky;top:15vh;padding:10px;border-radius:21px;
+    border:1px solid rgba(255,255,255,.11);
+    background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.026));
+    box-shadow:0 34px 90px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.10)}
+  .swap .pinned img{width:100%;border-radius:14px;border:1px solid rgba(255,255,255,.08)}
   .swap .steps>*{min-height:60vh;display:flex;flex-direction:column;justify-content:center}
   .swap .steps h3{margin:0 0 10px;font-size:clamp(20px,2vw,30px);letter-spacing:-.01em}
   .swap .steps p{color:var(--mute);margin:0;max-width:40ch}
@@ -86,7 +142,11 @@
 
   /* ── 3 · staggered entry ────────────────────────────────────────────── */
   .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
-  .card{background:rgba(255,255,255,.035);border:1px solid var(--hair);border-radius:16px;padding:26px}
+  .card{border:1px solid rgba(255,255,255,.11);border-radius:22px;padding:30px;
+    background:
+      radial-gradient(circle at 16% 0,rgba(226,178,120,.09),transparent 42%),
+      linear-gradient(150deg,rgba(255,255,255,.075),rgba(255,255,255,.027) 46%,rgba(255,255,255,.045));
+    box-shadow:0 30px 84px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.10)}
   .card h3{margin:0 0 8px;font-size:20px}
   .card p{margin:0;color:var(--mute);font-size:16px}
   .card b{color:var(--ink)}
@@ -100,12 +160,14 @@
   footer p{color:var(--mute)}
   footer .cta{display:inline-flex;align-items:center;gap:12px;margin-top:26px;padding:14px 22px;
     border:1px solid var(--hair);border-radius:999px;color:var(--ink);text-decoration:none;
-    transition:transform .5s var(--ease),border-color .5s var(--ease)}
+    background:linear-gradient(145deg,rgba(255,255,255,.10),rgba(255,255,255,.035));
+    box-shadow:0 18px 50px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.12);
+    transition:transform .5s var(--ease),border-color .5s var(--ease),box-shadow .5s var(--ease)}
   footer .cta:hover{transform:translateY(-2px);border-color:var(--signal)}
   footer .cta span{width:26px;height:26px;border-radius:999px;background:rgba(255,255,255,.08);
     display:grid;place-items:center;font-size:13px}
   .footer-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:14px}
-  footer .cta.secondary{background:rgba(255,255,255,.055)}
+  footer .cta.secondary{background:linear-gradient(145deg,rgba(255,255,255,.07),rgba(255,255,255,.025))}
 
   @media (max-width:820px){
     :root{--col:100%;--media:100%}
@@ -114,18 +176,27 @@
     .swap .pinned{position:relative;top:0;margin-bottom:32px}
     .grid{grid-template-columns:1fr}
     .hero{height:170vh}
+    .stage::after{bottom:-10%;background-size:54px 54px;opacity:.32}
+    .film-shell{border-radius:19px}
   }
   @media (prefers-reduced-motion:reduce){
-    html{scroll-behavior:auto}
+    html{scroll-behavior:auto!important}
+    *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
+      transition-duration:.01ms!important;scroll-behavior:auto!important}
     .hero{height:auto}
     .stage{position:relative;height:auto;padding:80px 0}
     .scrub-meter{display:none}
+    .film.ready img.first{opacity:1!important}
     [data-stagger]>*{opacity:1;transform:none;transition:none}
+    footer .cta:hover{transform:none}
     .rail{scroll-snap-type:none}
+    .atmosphere{opacity:.58}
   }
 </style>
 </head>
 <body>
+
+<canvas class="atmosphere" id="atmosphere" aria-hidden="true"></canvas>
 
 <section class="hero" id="top">
   <div class="stage">
@@ -136,10 +207,12 @@
       <p>Three structurally different directions, chosen on pixels — then verified on a projector and a phone before delivery.</p>
     </div>
 
-    <div class="film" id="film">
-      <img class="first" src="assets/hero_first.jpg" alt="">
-      <img class="last" src="assets/hero_last.jpg" alt="">
-      <canvas id="heroFilm" width="1280" height="720" aria-hidden="true"></canvas>
+    <div class="film-shell">
+      <div class="film" id="film">
+        <img class="first" src="assets/hero_first.jpg" alt="">
+        <img class="last" src="assets/hero_last.jpg" alt="">
+        <canvas id="heroFilm" width="1280" height="720" aria-hidden="true"></canvas>
+      </div>
     </div>
 
     <div class="scrub-meter"><i id="scrubBar"></i></div>
@@ -206,7 +279,105 @@
   const bar = document.getElementById('scrubBar');
   const hero = document.querySelector('.hero');
   const rail = document.getElementById('rail');
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const motionQuery = matchMedia('(prefers-reduced-motion: reduce)');
+  let reducedMotion = motionQuery.matches;
+
+  // Subtle instrument-panel particles: depth, not decoration noise.
+  const sky = document.getElementById('atmosphere');
+  const skyCtx = sky.getContext('2d');
+  let stars = [];
+  let skyW = 0;
+  let skyH = 0;
+  let skyDpr = 1;
+  let skyRaf = 0;
+
+  const drawSky = () => {
+    skyCtx.setTransform(skyDpr, 0, 0, skyDpr, 0, 0);
+    skyCtx.clearRect(0, 0, skyW, skyH);
+
+    for (let i = 0; i < stars.length; i++) {
+      const p = stars[i];
+      const alpha = .12 + p.z * .42;
+      if (p.glow) {
+        skyCtx.fillStyle = `rgba(${p.c},${alpha * .18})`;
+        skyCtx.beginPath();
+        skyCtx.arc(p.x, p.y, p.r * 4.2, 0, Math.PI * 2);
+        skyCtx.fill();
+      }
+      skyCtx.fillStyle = `rgba(${p.c},${alpha})`;
+      skyCtx.beginPath();
+      skyCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      skyCtx.fill();
+
+      for (let j = i + 1; j < stars.length; j++) {
+        const q = stars[j];
+        if (!p.link || !q.link) continue;
+        const dx = p.x - q.x;
+        const dy = p.y - q.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 118) {
+          const fade = (1 - dist / 118) * .055 * p.z * q.z;
+          skyCtx.strokeStyle = `rgba(226,178,120,${fade})`;
+          skyCtx.lineWidth = 1;
+          skyCtx.beginPath();
+          skyCtx.moveTo(p.x, p.y);
+          skyCtx.lineTo(q.x, q.y);
+          skyCtx.stroke();
+        }
+      }
+    }
+  };
+
+  const setupSky = () => {
+    skyDpr = Math.min(devicePixelRatio || 1, 2);
+    skyW = innerWidth;
+    skyH = innerHeight;
+    sky.width = Math.floor(skyW * skyDpr);
+    sky.height = Math.floor(skyH * skyDpr);
+    const mobile = skyW < 820;
+    const count = Math.min(mobile ? 42 : 82, Math.floor((skyW * skyH) / (mobile ? 23000 : 18000)));
+    stars = Array.from({length: count}, (_, index) => ({
+      x: Math.random() * skyW,
+      y: Math.random() * skyH,
+      z: .25 + Math.random() * .75,
+      r: .45 + Math.random() * 1.25,
+      vx: -.055 + Math.random() * .11,
+      vy: -.035 + Math.random() * .07,
+      link: index % 4 === 0,
+      glow: index % 9 === 0,
+      c: Math.random() < .1 ? '232,72,44' :
+         Math.random() < .32 ? '226,178,120' :
+         Math.random() < .48 ? '116,211,255' : '246,247,251',
+    }));
+    drawSky();
+  };
+
+  const tickSky = () => {
+    for (const p of stars) {
+      p.x += p.vx * p.z;
+      p.y += p.vy * p.z;
+      if (p.x < -12) p.x = skyW + 12;
+      if (p.x > skyW + 12) p.x = -12;
+      if (p.y < -12) p.y = skyH + 12;
+      if (p.y > skyH + 12) p.y = -12;
+    }
+    drawSky();
+    skyRaf = requestAnimationFrame(tickSky);
+  };
+
+  const startSky = () => {
+    if (!reducedMotion && !skyRaf) skyRaf = requestAnimationFrame(tickSky);
+  };
+  const stopSky = () => {
+    if (skyRaf) cancelAnimationFrame(skyRaf);
+    skyRaf = 0;
+  };
+  setupSky();
+  startSky();
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) stopSky();
+    else startSky();
+  });
 
   // Filmstrip scrubbing avoids inconsistent HTMLMediaElement seek behavior while
   // keeping the same 7-second scroll-controlled shot.
@@ -234,11 +405,13 @@
   if (filmstrip.complete) ready(); else filmstrip.addEventListener('load', ready, {once:true});
 
   // pattern 1: scroll scrubs the clip (no autoplay)
-  let target = 0, current = 0, raf = null;
+  let target = 0, current = 0, raf = null, heroObserver = null;
+  let heroRaf = 0, heroActive = false;
   const measure = () => {
     const r = hero.getBoundingClientRect();
     const span = hero.offsetHeight - innerHeight;
     const p = span > 0 ? Math.min(1, Math.max(0, -r.top / span)) : 0;
+    if (p === target) return;
     target = p;
     bar.style.width = (p * 100).toFixed(1) + '%';
     if (!raf) raf = requestAnimationFrame(step);
@@ -251,11 +424,61 @@
     if (current !== target) raf = requestAnimationFrame(step);
     else raf = null;
   };
-  if (!reduced) {
-    addEventListener('scroll', measure, {passive:true});
-    addEventListener('resize', measure);
+  const heroFrame = () => {
     measure();
-  } else drawFrame(0);
+    heroRaf = heroActive && !reducedMotion ? requestAnimationFrame(heroFrame) : 0;
+  };
+  const startHeroScrub = () => {
+    if (heroObserver) return;
+    target = current = 0;
+    drawFrame(0);
+    bar.style.width = '0%';
+    heroObserver = new IntersectionObserver((entries) => {
+      if (reducedMotion) return;
+      heroActive = entries[0].isIntersecting;
+      if (heroActive && !heroRaf) heroRaf = requestAnimationFrame(heroFrame);
+      if (!heroActive && heroRaf) {
+        cancelAnimationFrame(heroRaf);
+        heroRaf = 0;
+      }
+    }, {threshold:0});
+    heroObserver.observe(hero);
+  };
+  const stopHeroScrub = () => {
+    heroObserver?.disconnect();
+    heroObserver = null;
+    heroActive = false;
+    if (heroRaf) {
+      cancelAnimationFrame(heroRaf);
+      heroRaf = 0;
+    }
+    if (raf) {
+      cancelAnimationFrame(raf);
+      raf = null;
+    }
+    target = current = 0;
+    drawFrame(0);
+    bar.style.width = '0%';
+  };
+  const applyMotionPreference = () => {
+    reducedMotion = motionQuery.matches;
+    document.documentElement.classList.toggle('reduced-motion', reducedMotion);
+    stopSky();
+    stopHeroScrub();
+    setupSky();
+    if (reducedMotion) drawFrame(0);
+    else {
+      startSky();
+      startHeroScrub();
+    }
+  };
+  if (motionQuery.addEventListener) motionQuery.addEventListener('change', applyMotionPreference);
+  else motionQuery.addListener(applyMotionPreference);
+  applyMotionPreference();
+  addEventListener('resize', () => {
+    setupSky();
+    if (!reducedMotion) measure();
+  }, {passive:true});
 
   // pattern 3: staggered entry, one observer per group
   const io = new IntersectionObserver((es) => {
@@ -268,7 +491,10 @@
     const dir = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
     if (!dir) return;
     e.preventDefault();
-    rail.scrollBy({left: dir * rail.clientWidth * 0.62, behavior:'smooth'});
+    rail.scrollBy({
+      left: dir * rail.clientWidth * 0.62,
+      behavior: reducedMotion ? 'auto' : 'smooth'
+    });
   });
   rail.tabIndex = 0;
 })();

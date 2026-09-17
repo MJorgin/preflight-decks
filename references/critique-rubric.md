@@ -35,6 +35,12 @@ cover tests? Does the motif do its three jobs (open, recur, close)?
 - ≤2 type families; ≤3–4 purposeful colors; styles driven by variables
 - Every chart/icon resolves at 720p; no orphan rules or dead space
 - Numbers, units, dates, and capitalization follow one convention
+- Dark stages have deliberate depth (radial light, grain, hairline or a very
+  sparse particle/grid field); reject both flat black and noisy sci-fi clutter
+- Texture stays behind copy, keeps headline contrast high, introduces no
+  horizontal overflow, and has a static reduced-motion state
+- Reduced motion is verified with before/after canvas screenshots and a
+  scroll gesture; particles or the hero film changing pixels is a hard fail
 
 ## 3. Function
 
