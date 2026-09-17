@@ -1,0 +1,22 @@
+name: Bug report
+description: The verifier or pipeline misbehaves
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: OS and Python version
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction (command + minimal deck HTML if relevant)
+    validations:
+      required: true

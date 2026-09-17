@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preflight Decks — pitch</title>
+<style>
+/* === viewport-base.css (frontend-slides fixed-stage contract, verbatim) === */
+html,body{width:100%;height:100%;margin:0;overflow:hidden;background:var(--stage-bg,#000)}
+.deck-viewport{position:fixed;inset:0;overflow:hidden;background:var(--stage-bg,#000)}
+.deck-stage{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;transform-origin:0 0;background:var(--slide-bg,#fff)}
+.slide{position:absolute;inset:0;width:1920px;height:1080px;overflow:hidden;display:block;visibility:hidden;opacity:0;pointer-events:none;background:var(--slide-bg,#fff)}
+.slide.active,.slide.visible{visibility:visible;opacity:1;pointer-events:auto;z-index:1}
+img,video,canvas,svg{max-width:100%;max-height:100%}
+.deck-controls{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:1000}
+@media print{html,body{width:1920px;height:auto;overflow:visible;background:#fff}.deck-viewport{position:static;overflow:visible;background:#fff}.deck-stage{position:static;width:auto;height:auto;transform:none!important;background:none}.slide{position:relative;display:block!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;width:1920px;height:1080px;break-after:page;page-break-after:always}.slide:last-child{break-after:auto}.deck-controls{display:none!important}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.2s!important}}
+
+/* === preflight field-manual design system (chosen wildcard direction) === */
+:root{
+  --stage-bg:#14110d; --slide-bg:#f4f0e6;
+  --paper:#f4f0e6; --sheet:#fcfaf4; --ink:#1a1815; --ink2:#5c554a; --ink3:#968f80;
+  --rule:#ddd6c5; --red:#cc3f24; --pine:#2f694a; --ochre:#ad7716;
+  --disp:"Avenir Next","Helvetica Neue",Arial,sans-serif;
+  --mono:Menlo,"SF Mono",Consolas,monospace;
+  --serif:Georgia,"Times New Roman",serif;
+}
+.slide{font-family:var(--disp);color:var(--ink);background:var(--paper);
+  background-image:radial-gradient(rgba(60,48,30,.05) 1px,transparent 1px);background-size:26px 26px;}
+.kicker{font-family:var(--mono);font-size:20px;letter-spacing:.28em;color:var(--red);text-transform:uppercase}
+.mono{font-family:var(--mono)}
+.rule{height:2px;background:var(--ink)}
+.hair{height:1px;background:var(--rule)}
+.pad{position:absolute;inset:110px 130px}
+
+/* left readiness rail, the recurring motif */
+.rail{position:absolute;left:64px;top:150px;bottom:150px;width:2px;background:var(--rule)}
+.rail i{position:absolute;left:-9px;width:20px;height:20px;border-radius:50%;background:var(--paper);border:3px solid var(--rule);box-sizing:border-box}
+.rail i.on{background:var(--red);border-color:var(--red)}
+.rail b{position:absolute;left:30px;top:-11px;font-family:var(--mono);font-size:15px;letter-spacing:.14em;color:var(--ink3);font-weight:400}
+.rail i.on+b{color:var(--ink);font-weight:700}
+
+/* stamp */
+.stamp{position:absolute;border:4px solid var(--red);border-radius:10px;color:var(--red);
+  font-family:var(--mono);font-weight:700;text-align:center;line-height:1.15;
+  transform:rotate(-8deg);padding:18px 26px;letter-spacing:.12em;
+  box-shadow:inset 0 0 0 2px rgba(204,63,36,.25)}
+.stamp small{display:block;font-size:.62em;letter-spacing:.34em;margin-top:8px}
+
+.s1 h1{font-size:148px;font-weight:800;line-height:.98;margin:34px 0 0;letter-spacing:-.02em}
+.s1 h1 em{font-style:normal;color:var(--red)}
+.s1 .sub{font-size:30px;color:var(--ink2);margin-top:40px;max-width:1000px;line-height:1.45}
+.s1 .flow{position:absolute;left:130px;bottom:150px;font-family:var(--mono);font-size:20px;letter-spacing:.12em;color:var(--ink2)}
+
+.s2 .big{font-size:56px;font-weight:800;letter-spacing:-.01em;margin:0 0 6px}
+.s2 h2,.s3 h2,.s4 h2,.s5 h2{font-size:64px;font-weight:800;margin:18px 0 0;letter-spacing:-.01em}
+.cards{position:absolute;left:130px;right:130px;top:430px;display:flex;gap:34px}
+.card{flex:1;background:var(--sheet);border:1px solid var(--rule);padding:42px 38px 46px;min-height:360px;box-shadow:6px 8px 0 rgba(90,76,52,.10)}
+.card .num{font-family:var(--mono);font-size:22px;color:var(--red);letter-spacing:.2em}
+.card h3{font-size:38px;font-weight:800;margin:26px 0 16px;line-height:1.15}
+.card p{font-size:22px;line-height:1.5;color:var(--ink2);margin:0}
+
+.s3 .formula{position:absolute;left:130px;top:400px;right:130px;background:var(--sheet);border:1px solid var(--rule);padding:44px 52px;font-size:40px;line-height:1.5}
+.s3 .formula b{color:var(--red)}
+.trio{position:absolute;left:130px;right:130px;top:650px;display:flex;gap:26px}
+.pv{flex:1;border:1px solid var(--rule);background:var(--sheet);padding:22px 26px;min-height:230px}
+.pv .tag{font-family:var(--mono);font-size:16px;letter-spacing:.22em;color:var(--ink3)}
+.pv .pt{font-size:28px;font-weight:800;margin-top:14px;line-height:1.2}
+.pv .pd{font-size:19px;color:var(--ink2);margin-top:10px;line-height:1.4}
+.pv.win{border:2px solid var(--red);box-shadow:6px 8px 0 rgba(204,63,36,.12)}
+.chip{display:inline-block;border:1.5px solid var(--ink);border-radius:4px;padding:6px 14px;font-family:var(--mono);font-size:17px;letter-spacing:.08em;margin-right:14px}
+
+.s4 .dims{position:absolute;left:130px;top:400px;width:980px}
+.dim{display:flex;align-items:baseline;gap:24px;padding:17px 0;border-bottom:1px solid var(--rule)}
+.dim b{font-size:30px;font-weight:800;width:330px}
+.dim .bar{flex:1;height:10px;background:var(--rule);position:relative;top:-4px}
+.dim i{position:absolute;left:0;top:0;bottom:0;background:var(--ink)}
+.dim .w{font-family:var(--mono);font-size:18px;color:var(--ink2);width:90px}
+.veto{position:absolute;right:130px;top:430px;width:480px;background:var(--ink);color:var(--paper);padding:52px 46px}
+.veto .k{font-family:var(--mono);letter-spacing:.24em;font-size:17px;color:var(--red)}
+.veto p{font-size:32px;line-height:1.4;margin:24px 0 0;font-weight:700}
+.veto small{display:block;margin-top:26px;color:rgba(244,240,230,.65);font-size:19px;line-height:1.5}
+
+.s5 .term{position:absolute;left:130px;top:390px;width:1000px;background:#14110d;color:#e8e2d4;border-radius:8px;padding:40px 46px;font-family:var(--mono);font-size:25px;line-height:1.75}
+.s5 .term .ok{color:#7ebd98}.s5 .term .dim2{color:#c9b89a}
+.phone{position:absolute;right:190px;top:380px;width:300px;height:600px;border:10px solid var(--ink);border-radius:44px;background:var(--stage-bg);overflow:hidden;box-shadow:10px 14px 0 rgba(90,76,52,.15)}
+.phone .ph{position:absolute;left:50%;top:18px;width:110px;height:22px;background:var(--ink);border-radius:0 0 14px 14px;transform:translateX(-50%);z-index:2}
+.phone .screen{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.phone .mini{width:272px;height:153px;background:var(--paper);border:1px solid var(--rule);padding:14px}
+.phone .mini .mk{font-family:var(--mono);font-size:8px;letter-spacing:.2em;color:var(--red)}
+.phone .mini .mh{font-size:19px;font-weight:800;line-height:1.05;margin-top:6px}
+.phone .mini .mr{height:4px;background:var(--red);margin-top:8px;width:60%}
+
+.s6 h2{font-size:120px;line-height:1.02;max-width:1200px}
+.s6 h2 em{font-style:normal;color:var(--red)}
+.s6 .install{position:absolute;left:130px;bottom:240px;background:#14110d;color:#e8e2d4;border-radius:8px;padding:26px 34px;font-family:var(--mono);font-size:24px}
+.s6 .install span{color:var(--red)}
+.s6 .url{position:absolute;left:130px;bottom:150px;font-family:var(--mono);font-size:22px;color:var(--ink2);letter-spacing:.08em}
+.foot{position:absolute;left:130px;bottom:54px;font-family:var(--mono);font-size:16px;letter-spacing:.18em;color:var(--ink3)}
+.pgnum{position:absolute;right:130px;bottom:54px;font-family:var(--mono);font-size:16px;letter-spacing:.18em;color:var(--ink3)}
+</style>
+</head>
+<body>
+<div class="deck-viewport"><div class="deck-stage" id="stage">
+
+<!-- 1 · TITLE -->
+<section class="slide s1 active">
+  <div class="rail"><i class="on" style="top:0"></i><b>INTAKE</b><i style="top:155"></i><b style="color:var(--ink3)">CONCEPT</b><i style="top:310"></i><b>BUILD</b><i style="top:465"></i><b>CRITIQUE</b><i style="top:620"></i><b>VERIFY</b><i style="top:775"></i><b>DELIVER</b></div>
+  <div class="pad">
+    <div class="kicker">Concept-first HTML presentations</div>
+    <h1>Preflight<br><em>Decks.</em></h1>
+    <p class="sub">A deck director that refuses to start from a template. One idea, three real directions, and a deck proven to fit every screen.</p>
+    <div class="stamp" style="right:40px;top:60px;font-size:34px">CONCEPT<br>APPROVED<small>v0.1</small></div>
+  </div>
+  <div class="flow">AUDIT &nbsp;&gt;&nbsp; IDEA &nbsp;&gt;&nbsp; 3 DIRECTIONS &nbsp;&gt;&nbsp; BUILD &nbsp;&gt;&nbsp; VERIFY &nbsp;&gt;&nbsp; DELIVER</div>
+  <div class="pgnum">01 / 06</div>
+</section>
+
+<!-- 2 · PROBLEM -->
+<section class="slide s2">
+  <div class="pad">
+    <div class="kicker">The default failure</div>
+    <h2>Decks fail upstream of design.</h2>
+  </div>
+  <div class="cards">
+    <div class="card"><div class="num">FAILURE 01</div><h3>Nothing to say</h3><p>Competent slides carrying no argument. Swap the logo for a competitor's and nothing changes.</p></div>
+    <div class="card"><div class="num">FAILURE 02</div><h3>Three skins</h3><p>The "three directions" are one skeleton in three colors, so choosing is theater.</p></div>
+    <div class="card"><div class="num">FAILURE 03</div><h3>Fits one screen</h3><p>Gorgeous on the author's laptop; overflowing, reflowed, or unreadable on the projector and the phone.</p></div>
+  </div>
+  <div class="foot">PREFLIGHT DECKS</div><div class="pgnum">02 / 06</div>
+</section>
+
+<!-- 3 · CONCEPT GATE -->
+<section class="slide s3">
+  <div class="pad">
+    <div class="kicker">Stage 1 · the hard door</div>
+    <h2>Concept Gate.</h2>
+  </div>
+  <div class="formula">
+    This deck argues <b>&lt;claim&gt;</b>, and proves it visually with <b>&lt;motif&gt;</b>.<br>
+    <span style="font-size:26px;color:var(--ink2)"><span class="chip">NAME-SWAP TEST</span><span class="chip">COVER TEST</span><span class="chip">MOTIF OPENS · RECURS · CLOSES</span></span>
+  </div>
+  <div class="trio">
+    <div class="pv"><div class="tag">SAFE</div><div class="pt">A solid preset</div><div class="pd">Proves the legibility baseline.</div></div>
+    <div class="pv"><div class="tag">BOLD</div><div class="pt">A bold template</div><div class="pd">Pushes voice and layout risk.</div></div>
+    <div class="pv win"><div class="tag">WILDCARD ← CHOSEN HERE</div><div class="pt">The field manual</div><div class="pd">A motif grown from the content: paper, ink, readiness rail, stamp.</div></div>
+  </div>
+  <div class="foot">PREFLIGHT DECKS</div><div class="pgnum">03 / 06</div>
+</section>
+
+<!-- 4 · CRITIQUE -->
+<section class="slide s4">
+  <div class="pad">
+    <div class="kicker">Stage 3 · scored from pixels</div>
+    <h2>Critique Loop.</h2>
+  </div>
+  <div class="dims">
+    <div class="dim"><b>Concept</b><div class="w">0.25</div><div class="bar"><i style="width:100%;background:var(--red)"></i></div></div>
+    <div class="dim"><b>Function</b><div class="w">0.20</div><div class="bar"><i style="width:80%"></i></div></div>
+    <div class="dim"><b>Hierarchy</b><div class="w">0.20</div><div class="bar"><i style="width:80%"></i></div></div>
+    <div class="dim"><b>Craft</b><div class="w">0.15</div><div class="bar"><i style="width:60%"></i></div></div>
+    <div class="dim"><b>Originality</b><div class="w">0.10</div><div class="bar"><i style="width:40%"></i></div></div>
+    <div class="dim"><b>Motion</b><div class="w">0.10</div><div class="bar"><i style="width:40%"></i></div></div>
+  </div>
+  <div class="veto"><div class="k">VETO RULE</div><p>Concept ≤ 5 caps the whole deck at 6.0.</p><small>Polish can't rescue an empty idea. The fix is a new concept and a reopened gate — not cosmetic edits. Ship bar: 7.5, nothing below 6.</small></div>
+  <div class="foot">PREFLIGHT DECKS</div><div class="pgnum">04 / 06</div>
+</section>
+
+<!-- 5 · VERIFY -->
+<section class="slide s5">
+  <div class="pad">
+    <div class="kicker">Stage 4 · mechanical proof</div>
+    <h2>Verified on every screen.</h2>
+  </div>
+  <div class="term">
+    $ python3 scripts/verify-deck.py pitch.html<br>
+    slides: 6 | <span class="ok">errors: 0</span> | warnings: 0<br>
+    <span class="dim2">✓ stage scales to 1280×720 and 390×844, stays 16:9</span><br>
+    <span class="dim2">✓ no overflow · no blank slides · no placeholders</span><br>
+    artifacts: .preflight-check/<span class="ok"> (screenshots + report.json)</span>
+  </div>
+  <div class="phone"><div class="ph"></div><div class="screen"><div class="mini"><div class="mk">CONCEPT-FIRST</div><div class="mh">Preflight Decks.</div><div class="mr"></div></div></div></div>
+  <div class="foot">PREFLIGHT DECKS</div><div class="pgnum">05 / 06</div>
+</section>
+
+<!-- 6 · CTA -->
+<section class="slide s6">
+  <div class="pad">
+    <div class="kicker">Ship one file, anywhere</div>
+    <h2>Clear ideas<br><em>before pixels.</em></h2>
+    <div class="stamp" style="right:60px;top:140px;font-size:40px">CLEARED<br>TO BUILD<small>16:9 · ANY DEVICE</small></div>
+  </div>
+  <div class="install"><span>$</span> git clone github.com/MJorgin/preflight-decks</div>
+  <div class="url">MJORGIN/PREFLIGHT-DECKS &nbsp;·&nbsp; PEER: FRONTEND-SLIDES &nbsp;·&nbsp; MIT</div>
+  <div class="pgnum">06 / 06</div>
+</section>
+
+</div></div>
+<script>
+const stage=document.getElementById('stage');
+const slides=[...document.querySelectorAll('.slide')];let i=0;
+function fit(){const k=Math.min(innerWidth/1920,innerHeight/1080);
+  stage.style.transform='translate('+(innerWidth-1920*k)/2+'px,'+(innerHeight-1080*k)/2+'px) scale('+k+')';}
+function go(n){slides[i].classList.remove('active');i=(n+slides.length)%slides.length;slides[i].classList.add('active');}
+addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();go(i+1)}if(e.key==='ArrowLeft')go(i-1)});
+addEventListener('resize',fit);fit();
+</script>
+</body></html>

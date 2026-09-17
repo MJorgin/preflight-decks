@@ -1,0 +1,16 @@
+name: Feature request
+description: Suggest a pipeline or verifier improvement
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What deck failure should this catch or enable?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+    validations:
+      required: true
