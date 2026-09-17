@@ -139,20 +139,68 @@ def load_playwright():
 
 
 def make_contact_sheet(out_dir: Path, shots: list[Path], columns: int = 2) -> Path | None:
+    """Compose the verification contact sheet.
+
+    Every cell keeps its screenshot's own aspect ratio: wide captures go in a
+    grid, tall phone captures keep portrait cells on their own rows. Scaling
+    every shot into one fixed 16:9 cell would stretch a 390x844 phone capture
+    roughly 4x horizontally — the contact sheet is proof material, so a
+    stretched cell is worse than a small one.
+    """
     try:
-        from PIL import Image, ImageDraw
+        from PIL import Image, ImageDraw, ImageFont
     except ImportError:
         return None
-    images = [Image.open(p) for p in shots]
-    tw, th = 480, 270
-    rows = (len(images) + columns - 1) // columns
-    sheet = Image.new("RGB", (columns * tw, rows * (th + 22)), (24, 24, 24))
+
+    BG, FG = (24, 24, 24), (232, 232, 232)
+    WIDE_W, WIDE_MIN_RATIO = 800, 1.2
+    TALL_H, TALL_PER_ROW, GAP, LABEL_H = 560, 4, 12, 24
+
+    entries = []
+    for p in shots:
+        im = Image.open(p).convert("RGB")
+        entries.append((p, im, im.width / im.height))
+
+    def cell_size(im: "Image.Image", ratio: float) -> tuple[int, int]:
+        if ratio >= WIDE_MIN_RATIO:
+            w = WIDE_W
+            return w, max(1, round(w * im.height / im.width))
+        h = TALL_H
+        return max(1, round(h * im.width / im.height)), h
+
+    wide = [e for e in entries if e[2] >= WIDE_MIN_RATIO]
+    tall = [e for e in entries if e[2] < WIDE_MIN_RATIO]
+    rows = [wide[i:i + columns] for i in range(0, len(wide), columns)]
+    rows += [tall[i:i + TALL_PER_ROW] for i in range(0, len(tall), TALL_PER_ROW)]
+    rows = [r for r in rows if r]
+
+    sheet_w = WIDE_W * max(1, min(columns, max(1, len(wide))))
+    sheet_h = sum(max(cell_size(im, r)[1] for _, im, r in row) + LABEL_H for row in rows)
+    sheet_h += GAP * max(0, len(rows) - 1)
+
+    font = None
+    for cand in ("/System/Library/Fonts/Menlo.ttc",
+                 "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"):
+        try:
+            font = ImageFont.truetype(cand, 15)
+            break
+        except Exception:
+            continue
+
+    sheet = Image.new("RGB", (sheet_w, max(sheet_h, LABEL_H)), BG)
     d = ImageDraw.Draw(sheet)
-    for i, im in enumerate(images):
-        im = im.resize((tw, th))
-        x, y = (i % columns) * tw, (i // columns) * (th + 22)
-        sheet.paste(im, (x, y + 22))
-        d.text((x + 8, y + 4), shots[i].stem, fill=(230, 230, 230))
+    y = 0
+    for row in rows:
+        cells = [cell_size(im, r) for _, im, r in row]
+        row_h = max(h for _, h in cells)
+        row_w = sum(w for w, _ in cells) + GAP * (len(cells) - 1)
+        x = (sheet_w - row_w) // 2
+        for (p, im, _), (cw, ch) in zip(row, cells):
+            label = f"{p.stem}  ·  {im.width}×{im.height}"
+            d.text((x + 4, y + 4), label, fill=FG, font=font)
+            sheet.paste(im.resize((cw, ch), Image.LANCZOS), (x, y + LABEL_H))
+            x += cw + GAP
+        y += row_h + LABEL_H + GAP
     path = out_dir / "contact-sheet.png"
     sheet.save(path)
     return path
