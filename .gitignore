@@ -1,0 +1,6 @@
+.preflight-check/
+__pycache__/
+*.pyc
+.DS_Store
+decks/
+/direction-approved.md
