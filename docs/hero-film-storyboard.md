@@ -40,3 +40,24 @@ The verifier screenshots the film is cut from are generated, not committed; the
 script runs `scripts/verify-deck.py` first when they are missing. The stage is
 deterministic, so a fresh clone rebuilds the same film without random particle
 or grain flicker.
+
+## Launch-page assets derived from the master film
+
+The live launch page (`site/`) reuses this film's full arc instead of keeping
+its own cut:
+
+```bash
+# 72-frame WebP sprite for scroll scrubbing + first/last fallback JPEGs
+# (requires ffmpeg; samples evenly across all five shots, so the site can
+# silently drift to a two-clip recut no more)
+python3 scripts/render_site_filmstrip.py
+
+# rail + pinned screenshots, floated as lit screens on the matching dark set
+python3 scripts/render_site_previews.py
+
+# 1280x640 OG/Twitter card with the launch headline and the chosen direction
+python3 scripts/render_site_social_card.py   # macOS (system SF Pro)
+```
+
+Preview sources live in `assets/site-previews/`; all three outputs land in
+`site/assets/`, are committed, and are never rebuilt in CI.

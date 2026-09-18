@@ -384,10 +384,10 @@
   const FRAME_W = 1280;
   const FRAME_H = 720;
   const COLS = 6;
-  const FRAMES = 36;
+  const FRAMES = 72;
   let lastFrame = -1;
   const filmstrip = new Image();
-  filmstrip.src = 'assets/hero-filmstrip.jpg';
+  filmstrip.src = 'assets/hero-filmstrip.webp';
   const drawFrame = (progress) => {
     const index = Math.min(FRAMES - 1, Math.floor(progress * FRAMES));
     if (index === lastFrame || !filmstrip.complete || !filmstrip.naturalWidth) return;
