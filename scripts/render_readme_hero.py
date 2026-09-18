@@ -127,12 +127,6 @@ def ease_in_out(v):
     return 4 * v ** 3 if v < 0.5 else 1 - (-2 * v + 2) ** 3 / 2
 
 
-def ease_out_back(v):
-    v = clamp(v)
-    c1, c3 = 1.70158, 2.70158
-    return 1 + c3 * (v - 1) ** 3 + c1 * (v - 1) ** 2
-
-
 def zoom_seconds(z_from, z_to):
     """camera-language §4.2 log duration formula, clamped to [0.30, 0.94]s."""
     d = 0.55 * abs(math.log(z_to / z_from)) / math.log(2)
@@ -312,7 +306,7 @@ def center_scrim(d, cy, text, fnt, tracking=0, pad_x=26, height=58):
     center_tracked(d, W / 2, cy, text, fnt, INK, tracking)
 
 
-def hud(img, label, progress):
+def hud(img, label):
     """Fixed camera-rig chrome; the product world moves beneath it."""
     d = ImageDraw.Draw(img)
     w = int(tracked_w(d, label, F["mono_xsb"], 3)) + 72
@@ -325,11 +319,6 @@ def hud(img, label, progress):
     d.text((W - 52 - d.textlength(sig, font=F["mono_xs"]), 46),
            sig, font=F["mono_xs"], fill=INK3)
 
-    x0, x1, y = 530, 750, 684
-    d.rounded_rectangle((x0, y, x1, y + 3), radius=2, fill=(255, 255, 255, 34))
-    fill_w = int((x1 - x0) * clamp(progress))
-    if fill_w:
-        d.rounded_rectangle((x0, y, x0 + fill_w, y + 3), radius=2, fill=CINNABAR_BRIGHT)
     return img
 
 
@@ -395,24 +384,6 @@ def float_screen(base, slide, x, y, w, h, *, chosen=False, dim=0, enter=1.0,
     if enter < 1:
         layer.putalpha(layer.getchannel("A").point(lambda a: int(a * clamp(enter))))
     base.alpha_composite(layer)
-
-
-def instrument_badge(text1, text2, scale=1.0, alpha=235):
-    w, h = 244, 76
-    layer = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-    d = ImageDraw.Draw(layer)
-    col = CINNABAR_BRIGHT + (alpha,)
-    d.rounded_rectangle((1, 1, w - 2, h - 2), radius=18,
-                        fill=(7, 9, 14, int(alpha * 0.92)),
-                        outline=col, width=2)
-    d.rounded_rectangle((6, 6, w - 7, h - 7), radius=14,
-                        outline=(255, 255, 255, int(alpha * 0.12)), width=1)
-    f1, f2 = mono(23, "Bold"), mono(12, "Medium")
-    d.text(((w - tracked_w(d, text1, f1, 2)) / 2, 17), text1, font=f1, fill=col)
-    d.text(((w - tracked_w(d, text2, f2, 3)) / 2, 48), text2, font=f2,
-           fill=INK + (alpha,))
-    layer = layer.resize((max(1, int(w * scale)), max(1, int(h * scale))), Image.BICUBIC)
-    return layer.rotate(-1.5, expand=True, resample=Image.BICUBIC)
 
 
 # --------------------------------------------------------------- camera rig
@@ -530,7 +501,7 @@ THUMBS = [
     (PREVIEWS / "02-bold-signal.png", "02", "BOLD TEMPLATE"),
     (PREVIEWS / "03-wildcard-manual.png", "03", "WILDCARD · FIELD MANUAL"),
 ]
-WASH_AT, STAMP_AT, CAPTION_AT = 30, 44, 52
+WASH_AT, CAPTION_AT = 30, 52
 
 
 def shot_gate(f, n):
@@ -554,12 +525,6 @@ def shot_gate(f, n):
         text_shadow(d, (x + 44, y - 31), label, F["mono_s"])
         d.text((x + 44, y - 31), label, font=F["mono_s"],
                fill=CINNABAR if chosen else INK2)
-
-    if f >= STAMP_AT:
-        q = ease_out_back((f - STAMP_AT) / 8)
-        a = int(240 * clamp((f - STAMP_AT) / 4))
-        st = instrument_badge("CHOSEN", "DIRECTION", scale=0.66 * q, alpha=a)
-        img.alpha_composite(st, (int(THIRD_X - st.width / 2), int(THIRD_Y - st.height / 2)))
 
     if f >= CAPTION_AT:
         a = int(255 * ease_out((f - CAPTION_AT) / 5))
@@ -619,41 +584,43 @@ def shot_verify(f, n):
     proj_in = ease_out((f - 2) / 6)
     if proj_in > 0:
         pj = Image.open(SHOTS / "slide-05-720p.png").convert("RGB")
-        float_screen(mid, pj, 72, 166, 580, 326, enter=proj_in,
+        float_screen(mid, pj, 84, 174, 560, 315, enter=proj_in,
                      radius=12, shell=9)
-        tracked(md, (72, 510), "1280 × 720  ·  PROJECTOR / 1080P", F["mono_xs"], INK2, 1)
+        tracked(md, (84, 506), "1280 × 720  ·  PROJECTOR / 1080P", F["mono_xs"], INK2, 1)
     ph_in = ease_out((f - 8) / 6)
     if ph_in > 0:
-        src = Image.open(SHOTS / "slide-02-phone.png").convert("RGBA").resize((190, 410), Image.LANCZOS)
-        hx, hy = 1004, 146
+        src = Image.open(SHOTS / "slide-02-phone.png").convert("RGBA").resize((176, 380), Image.LANCZOS)
+        hx, hy = 1006, 160
         shadow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
         ImageDraw.Draw(shadow).rounded_rectangle(
-            (hx - 2, hy + 18, hx + 192, hy + 440), radius=32, fill=(0, 0, 0, 168))
+            (hx + 8, hy + 18, hx + 168, hy + 410), radius=30, fill=(0, 0, 0, 168))
         mid.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(24)))
-        md.rounded_rectangle((hx - 11, hy - 13, hx + 201, hy + 423),
-                             radius=30, fill=(238, 242, 248, 245),
+        md.rounded_rectangle((hx - 14, hy - 14, hx + 190, hy + 400),
+                             radius=34, fill=(238, 242, 248, 245),
                              outline=(255, 255, 255, 90), width=1)
-        md.rounded_rectangle((hx - 5, hy - 7, hx + 195, hy + 417),
-                             radius=24, fill=(7, 8, 12, 255))
-        mask = Image.new("L", (190, 410), 0)
-        ImageDraw.Draw(mask).rounded_rectangle((0, 0, 189, 409), radius=18, fill=255)
+        md.rounded_rectangle((hx - 7, hy - 7, hx + 183, hy + 387),
+                            radius=27, fill=(7, 8, 12, 255))
+        mask = Image.new("L", (176, 380), 0)
+        ImageDraw.Draw(mask).rounded_rectangle((0, 0, 175, 379), radius=22, fill=255)
         src.putalpha(mask.point(lambda a: int(a * ph_in)))
         mid.alpha_composite(src, (hx, hy))
-        md.rounded_rectangle((hx, hy, hx + 189, hy + 409), radius=18,
+        md.rounded_rectangle((hx, hy, hx + 175, hy + 379), radius=22,
                              outline=(255, 255, 255, 72), width=1)
-        tracked(md, (hx - 10, hy + 432), "390 × 844  ·  PHONE", F["mono_xs"], INK2, 1)
+        phone_caption = "390 × 844 · PHONE"
+        tracked(md, (hx + 88 - tracked_w(md, phone_caption, F["mono_xs"], 1) / 2, hy + 424),
+                phone_caption, F["mono_xs"], INK2, 1)
     img.alpha_composite(mid, (int(x * 0.7), int(y * 0.7)))
 
     # Near layer: the receipt.
     near = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     term_a = int(255 * ease_out((f - 14) / 6))
     if term_a > 0:
-        term = Image.new("RGBA", (744, 112), (0, 0, 0, 0))
+        term = Image.new("RGBA", (830, 108), (0, 0, 0, 0))
         td = ImageDraw.Draw(term)
-        td.rounded_rectangle((0, 0, 743, 111), radius=18,
+        td.rounded_rectangle((0, 0, 829, 107), radius=14,
                              fill=CODE + (term_a,),
                              outline=(255, 255, 255, int(term_a * 0.14)), width=1)
-        td.rounded_rectangle((5, 5, 738, 106), radius=14,
+        td.rounded_rectangle((5, 5, 824, 102), radius=11,
                              outline=(255, 255, 255, int(term_a * 0.07)), width=1)
         colp, colc = CODE_PAPER + (term_a,), CINNABAR_BRIGHT + (term_a,)
         td.text((22, 16), "$ python3 scripts/verify-deck.py pitch.html",
@@ -662,10 +629,10 @@ def shot_verify(f, n):
             td.text((22, 46), "6 slides · 2 viewports · 0 overflow",
                     font=F["mono_xs"], fill=colp)
         if f >= 28:
-            td.ellipse((586, 25, 595, 34), fill=colc)
-            td.text((608, 20), "CLEARED", font=F["mono_xs"], fill=colc)
+            td.ellipse((796, 25, 805, 34), fill=colc)
+            td.text((712, 20), "CLEARED", font=F["mono_xs"], fill=colc)
             td.text((22, 74), "0 errors · 0 warnings", font=F["mono_b"], fill=colc)
-        near.alpha_composite(term, (216, 528))
+        near.alpha_composite(term, (76, 586))
     img.alpha_composite(near, (int(x * 1.2), int(y * 1.2)))
     return img
 
@@ -716,9 +683,7 @@ def scene_frame(index, local):
     local = max(0, min(local, scene_frames - 1))
     sheet = SHOT_FN[name](local, scene_frames)
     zoom, cx, cy = CAM_FN[name](local, scene_frames)
-    total = sum(n for _, n in SCENES)
-    progress = (scene_start(index) + local + 1) / total
-    return hud(apply_camera(sheet, zoom, cx, cy), LABELS[name], progress)
+    return hud(apply_camera(sheet, zoom, cx, cy), LABELS[name])
 
 
 def ensure_verifier_shots():

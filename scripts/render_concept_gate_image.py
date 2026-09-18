@@ -97,11 +97,11 @@ def main():
             d.text((72, y + 352 + j * 30), line, font=f_note, fill=MUTE + (255,))
 
         if chosen:
-            x1 = CARD_X + CARD_W - 164
-            d.rounded_rectangle((x1, y + 24, x1 + 140, y + 62), radius=19,
+            x1 = 72
+            d.rounded_rectangle((x1, y + 24, x1 + 164, y + 62), radius=19,
                                 fill=CINNABAR + (238,))
-            tracked(d, (x1 + 27, y + 36), "CHOSEN", mono(15, "Medium"),
-                    (255, 255, 255, 255), 2)
+            tracked(d, (x1 + 21, y + 36), "CHOSEN DIRECTION", mono(15, "Medium"),
+                    (255, 255, 255, 255), 1)
 
     tracked(d, (240, H - 72), "ONLY THE CHOSEN DIRECTION IS BUILT INTO THE FULL DECK",
             mono(18, "Medium"), (150, 156, 168, 255), 3)
