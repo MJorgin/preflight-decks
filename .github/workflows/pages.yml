@@ -28,6 +28,11 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Verify site references before deploy
+        run: node scripts/check_site.mjs
       - name: Stage the launch page and deck
         run: |
           mkdir -p _site
