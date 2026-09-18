@@ -30,7 +30,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
 PREVIEWS = ROOT / "examples/previews"
@@ -100,12 +100,14 @@ def mono(size, weight="Regular"):
 F = {
     "h1": sf(60, "Bold"),
     "h2": sf(34, "Semibold"),
+    "body": sf(24, "Regular"),
     "brief": sf(31, "Regular"),
     "mono": mono(19),
     "mono_b": mono(19, "Medium"),
     "mono_s": mono(15),
     "mono_xs": mono(13),
     "mono_xsb": mono(13, "Medium"),
+    "chip": mono(11, "Medium"),
     "term_l": mono(22, "Bold"),
 }
 
@@ -123,12 +125,6 @@ def ease_in_out(v):
     """power3.inOut — the easing camera-language §4.1 mandates for push/pull."""
     v = clamp(v)
     return 4 * v ** 3 if v < 0.5 else 1 - (-2 * v + 2) ** 3 / 2
-
-
-def ease_out_back(v):
-    v = clamp(v)
-    c1, c3 = 1.70158, 2.70158
-    return 1 + c3 * (v - 1) ** 3 + c1 * (v - 1) ** 2
 
 
 def zoom_seconds(z_from, z_to):
@@ -310,42 +306,84 @@ def center_scrim(d, cy, text, fnt, tracking=0, pad_x=26, height=58):
     center_tracked(d, W / 2, cy, text, fnt, INK, tracking)
 
 
-def hud(img, label, chip=False):
-    """Fixed layer: step label, signature, sheet rule. Never moves with the camera."""
+def hud(img, label):
+    """Fixed camera-rig chrome; the product world moves beneath it."""
     d = ImageDraw.Draw(img)
-    if chip:
-        w = int(tracked_w(d, label, F["mono_xsb"], 3)) + 44
-        d.rounded_rectangle((40, 34, 40 + w, 74), radius=4, fill=SHEET + (242,),
-                            outline=(255, 255, 255, 34), width=2)
-        tracked(d, (62, 46), label, F["mono_xsb"], AMBER, 3)
-    else:
-        d.rectangle((46, 46, 55, 55), fill=CINNABAR)
-        tracked(d, (68, 44), label, F["mono_xsb"], AMBER, 3)
-    sig = "MJORGIN/PREFLIGHT-DECKS"
-    d.text((W - 64 - d.textlength(sig, font=F["mono_xs"]), 46), sig, font=F["mono_xs"], fill=INK3)
-    d.line((64, 668, W - 64, 668), fill=LINE, width=1)
+    w = int(tracked_w(d, label, F["mono_xsb"], 3)) + 72
+    d.rounded_rectangle((36, 30, 36 + w, 70), radius=20,
+                        fill=(7, 9, 14, 226), outline=(255, 255, 255, 30), width=1)
+    d.ellipse((56, 43, 65, 52), fill=CINNABAR_BRIGHT)
+    tracked(d, (76, 43), label, F["mono_xsb"], AMBER, 3)
+
+    sig = "PREFLIGHT DECKS"
+    d.text((W - 52 - d.textlength(sig, font=F["mono_xs"]), 46),
+           sig, font=F["mono_xs"], fill=INK3)
+
     return img
 
 
-def stamp(text1, text2, scale=1.0, alpha=235):
-    w, h = 300, 158
-    layer = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-    sd = ImageDraw.Draw(layer)
-    col = CINNABAR_BRIGHT + (alpha,)
-    sd.rounded_rectangle((8, 8, w - 8, h - 8), radius=6, outline=col, width=4)
-    sd.rounded_rectangle((17, 17, w - 17, h - 17), radius=4, outline=col, width=1)
-    f1, f2 = font(SFMONO, 26, 1), font(SFMONO, 19, 1)
-    sd.text(((w - tracked_w(sd, text1, f1, 2)) / 2, 40), text1, font=f1, fill=col)
-    sd.text(((w - tracked_w(sd, text2, f2, 4)) / 2, 88), text2, font=f2, fill=col)
-    rng = random.Random(412)
-    px = layer.load()
-    for _ in range(1500):
-        x, y = rng.randrange(w), rng.randrange(h)
-        r, g, b, a = px[x, y]
-        if a:
-            px[x, y] = (r, g, b, int(a * rng.uniform(0.55, 1.0)))
-    layer = layer.resize((max(1, int(w * scale)), max(1, int(h * scale))), Image.BICUBIC)
-    return layer.rotate(-8, expand=True, resample=Image.BICUBIC)
+def float_screen(base, slide, x, y, w, h, *, chosen=False, dim=0, enter=1.0,
+                 radius=12, shell=8, reflection=False):
+    """Place a real slide in a nested glass/bezel assembly."""
+    layer = Image.new("RGBA", base.size, (0, 0, 0, 0))
+    ld = ImageDraw.Draw(layer)
+    outer_r = radius + shell
+
+    if chosen:
+        halo = Image.new("RGBA", base.size, (0, 0, 0, 0))
+        ImageDraw.Draw(halo).rounded_rectangle(
+            (x - shell - 10, y - shell - 10,
+             x + w + shell + 10, y + h + shell + 10),
+            radius=outer_r + 10, fill=CINNABAR + (72,))
+        layer.alpha_composite(halo.filter(ImageFilter.GaussianBlur(30)))
+
+    shadow = Image.new("RGBA", base.size, (0, 0, 0, 0))
+    ImageDraw.Draw(shadow).rounded_rectangle(
+        (x - shell + 7, y - shell + 24,
+         x + w + shell - 7, y + h + shell + 42),
+        radius=outer_r, fill=(0, 0, 0, 150))
+    layer.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(max(18, shell * 4))))
+
+    ld.rounded_rectangle(
+        (x - shell, y - shell, x + w + shell, y + h + shell),
+        radius=outer_r, fill=(10, 12, 18, 238),
+        outline=CINNABAR + (224,) if chosen else (255, 255, 255, 48),
+        width=2 if chosen else 1)
+    ld.rounded_rectangle(
+        (x - shell + 3, y - shell + 3, x + w + shell - 3, y + h + shell - 3),
+        radius=max(0, outer_r - 3), outline=(255, 255, 255, 24), width=1)
+
+    card = slide.convert("RGBA").resize((w, h), Image.LANCZOS)
+    mask = Image.new("L", (w, h), 0)
+    ImageDraw.Draw(mask).rounded_rectangle((0, 0, w - 1, h - 1),
+                                           radius=radius, fill=255)
+    card.putalpha(mask)
+
+    if reflection:
+        refl_h = min(72, h // 4)
+        refl = card.crop((0, h - refl_h, w, h)).transpose(Image.Transpose.FLIP_TOP_BOTTOM)
+        fade = Image.new("L", (w, refl_h), 0)
+        fp = fade.load()
+        for yy in range(refl_h):
+            alpha = int(96 * (1 - yy / refl_h) ** 1.7)
+            for xx in range(w):
+                fp[xx, yy] = alpha
+        refl.putalpha(ImageChops.multiply(refl.getchannel("A"), fade))
+        layer.alpha_composite(refl, (x, y + h - 2))
+
+    layer.alpha_composite(card, (x, y))
+    if dim:
+        veil = Image.new("RGBA", (w, h), PAPER + (int(255 * dim),))
+        veil.putalpha(mask.point(lambda a: int(a * dim)))
+        layer.alpha_composite(veil, (x, y))
+
+    ld.rounded_rectangle((x, y, x + w - 1, y + h - 1), radius=radius,
+                         outline=CINNABAR_BRIGHT + (210,) if chosen else (255, 255, 255, 70),
+                         width=2 if chosen else 1)
+
+    if enter < 1:
+        layer.putalpha(layer.getchannel("A").point(lambda a: int(a * clamp(enter))))
+    base.alpha_composite(layer)
 
 
 # --------------------------------------------------------------- camera rig
@@ -361,8 +399,8 @@ def apply_camera(sheet, zoom, cx, cy):
     return world.crop(box).resize((W, H), Image.LANCZOS)
 
 
-TH_W, TH_H = 380, 214
-TH_X0, TH_Y, TH_GAP = 40, 250, 30
+TH_W, TH_H = 368, 207
+TH_X0, TH_Y, TH_GAP = 64, 246, 24
 THIRD_X = TH_X0 + 2 * (TH_W + TH_GAP) + TH_W / 2
 THIRD_Y = TH_Y + TH_H / 2
 
@@ -381,11 +419,10 @@ def cam_gate(f, n):
     # then push in on the one that gets chosen.
     pan_end, push_start = 40, 44
     if f < push_start:
-        return 1.0, W / 2 + 320 * ease_in_out(f / pan_end), H / 2
+        pan_x = W / 2 + (THIRD_X - W / 2) * ease_in_out(f / pan_end)
+        return 1.0, pan_x, H / 2
     t = ease_in_out((f - push_start) / CAM_PUSH_FRAMES)
-    return (1.0 + 0.3 * t,
-            (W / 2 + 320) + (THIRD_X - (W / 2 + 320)) * t,
-            H / 2 + (THIRD_Y - H / 2) * t)
+    return 1.0 + 0.3 * t, THIRD_X, THIRD_Y
 
 
 def cam_static(f, n):
@@ -400,15 +437,40 @@ def cam_end(f, n):
 
 def shot_intake(f, n):
     img, d = stage()
-    d.rounded_rectangle((220, 150, 1060, 560), radius=8, fill=SHEET, outline=LINE, width=2)
-    tracked(d, (256, 188), "THE BRIEF", F["mono_xs"], CINNABAR, 3)
+    tracked(d, (88, 126), "THE BRIEF", F["mono_xs"], AMBER, 3)
+    d.text((84, 178), "Start with the", font=F["h1"], fill=INK)
+    d.text((84, 244), "actual brief.", font=F["h1"], fill=INK)
+    d.text((88, 344), "The same prompt every agent gets —",
+           font=F["body"], fill=INK2)
+    d.text((88, 382), "plus the room it has to survive.",
+           font=F["body"], fill=INK2)
+
+    d.rounded_rectangle((88, 474, 658, 578), radius=20,
+                        fill=(10, 13, 19, 218), outline=(255, 255, 255, 28), width=1)
+    d.rounded_rectangle((94, 480, 652, 572), radius=15,
+                        outline=(255, 255, 255, 10), width=1)
+    tracked(d, (112, 498), "THE GATE BLOCKS", F["chip"], CINNABAR_BRIGHT, 2)
+    for i, label in enumerate(("EMPTY CONCEPT", "THREE RECOLORS", "STAGE OVERFLOW")):
+        x = 112 + i * 184
+        d.ellipse((x, 535, x + 7, 542), fill=CINNABAR_BRIGHT)
+        tracked(d, (x + 16, 529), label, F["chip"], INK2, 1)
+
+    d.rounded_rectangle((712, 134, 1216, 532), radius=29,
+                        fill=(10, 12, 18, 238), outline=(255, 255, 255, 38), width=1)
+    d.rounded_rectangle((724, 146, 1204, 520), radius=23,
+                        fill=SHEET + (246,), outline=(255, 255, 255, 64), width=1)
+    d.ellipse((752, 178, 762, 188), fill=(255, 104, 92, 210))
+    d.ellipse((772, 178, 782, 188), fill=(255, 196, 78, 210))
+    d.ellipse((792, 178, 802, 188), fill=(77, 209, 131, 210))
+    tracked(d, (824, 176), "brief.md", F["mono_xs"], INK3, 1)
+    d.line((752, 214, 1176, 214), fill=(255, 255, 255, 28), width=1)
 
     lines = [
-        "“A pitch deck for our",
-        "open-source presentation",
-        "skill. It has to hold up",
-        "on a projector — and a",
-        "phone.”",
+        "Make a pitch deck for",
+        "Preflight Decks.",
+        "",
+        "Audience: developers",
+        "Room: projector + phone",
     ]
     total_chars = sum(len(t) for t in lines)
     shown = int(clamp((f - 4) / 78) * total_chars)
@@ -416,17 +478,20 @@ def shot_intake(f, n):
     for text in lines:
         if shown <= consumed:
             break
-        d.text((256, y), text[: min(len(text), shown - consumed)], font=F["brief"], fill=INK)
+        d.text((752, y), text[: min(len(text), shown - consumed)],
+               font=F["brief"], fill=INK)
         consumed += len(text)
-        y += 52
+        y += 44
 
     if f >= 80:
         a = int(255 * ease_out((f - 80) / 6))
         warn = Image.new("RGBA", (W, H), (0, 0, 0, 0))
         wd = ImageDraw.Draw(warn)
-        wd.rounded_rectangle((256, 500, 1024, 536), radius=4, fill=CINNABAR + (a,))
-        wd.text((276, 507), "USUAL RESULT: NOTHING TO SAY · 3 RECOLORS · OVERFLOW ON STAGE",
-                font=F["mono_xs"], fill=PAPER + (a,))
+        wd.rounded_rectangle((752, 462, 1176, 500), radius=19,
+                             fill=CINNABAR + (a,), outline=(255, 220, 210, int(a * 0.28)),
+                             width=1)
+        tracked(wd, (786, 474), "WAITING FOR CONCEPT GATE", F["mono_xs"],
+                PAPER + (a,), 2)
         img.alpha_composite(warn)
     return img
 
@@ -436,7 +501,7 @@ THUMBS = [
     (PREVIEWS / "02-bold-signal.png", "02", "BOLD TEMPLATE"),
     (PREVIEWS / "03-wildcard-manual.png", "03", "WILDCARD · FIELD MANUAL"),
 ]
-WASH_AT, STAMP_AT, CAPTION_AT = 30, 44, 52
+WASH_AT, CAPTION_AT = 30, 52
 
 
 def shot_gate(f, n):
@@ -450,27 +515,16 @@ def shot_gate(f, n):
             continue
         x = TH_X0 + i * (TH_W + TH_GAP)
         y = TH_Y + int((1 - enter) * 26)
-        frame = Image.open(path).convert("RGB").resize((TH_W, TH_H), Image.LANCZOS).convert("RGBA")
-        if enter < 1:
-            frame.putalpha(int(235 * enter))
-        img.alpha_composite(frame, (x, y))
-        if f >= WASH_AT and i < 2:
-            img.alpha_composite(Image.new("RGBA", (TH_W, TH_H), PAPER + (168,)), (x, y))
+        slide = Image.open(path).convert("RGB")
         chosen = i == 2 and f >= WASH_AT
-        d.rounded_rectangle((x - 2, y - 2, x + TH_W + 1, y + TH_H + 1), radius=2,
-                            outline=CINNABAR_BRIGHT if chosen else LINE,
-                            width=3 if chosen else 2)
+        float_screen(img, slide, x, y, TH_W, TH_H, chosen=chosen,
+                     dim=0.70 if f >= WASH_AT and i < 2 else 0, enter=enter,
+                     radius=10, shell=7, reflection=True)
         text_shadow(d, (x, y - 34), idx, F["mono_b"])
         d.text((x, y - 34), idx, font=F["mono_b"], fill=CINNABAR if chosen else INK3)
         text_shadow(d, (x + 44, y - 31), label, F["mono_s"])
         d.text((x + 44, y - 31), label, font=F["mono_s"],
                fill=CINNABAR if chosen else INK2)
-
-    if f >= STAMP_AT:
-        q = ease_out_back((f - STAMP_AT) / 8)
-        a = int(240 * clamp((f - STAMP_AT) / 4))
-        st = stamp("CHOSEN", "DIRECTION", scale=0.62 * q, alpha=a)
-        img.alpha_composite(st, (int(THIRD_X - st.width / 2), int(THIRD_Y - st.height / 2)))
 
     if f >= CAPTION_AT:
         a = int(255 * ease_out((f - CAPTION_AT) / 5))
@@ -479,8 +533,9 @@ def shot_gate(f, n):
         txt = "you pick on pixels — then only the chosen direction gets built"
         tw = cd.textlength(txt, font=F["mono_s"])
         cd.rounded_rectangle((W / 2 - tw / 2 - 18, 526, W / 2 + tw / 2 + 18, 560),
-                             radius=4, fill=INK + (int(a * 0.9),))
-        cd.text((W / 2 - tw / 2, 533), txt, font=F["mono_s"], fill=PAPER + (a,))
+                             radius=13, fill=(7, 9, 14, int(a * 0.90)),
+                             outline=(255, 255, 255, int(a * 0.14)), width=1)
+        cd.text((W / 2 - tw / 2, 533), txt, font=F["mono_s"], fill=INK + (a,))
         img.alpha_composite(cap)
     return img
 
@@ -493,28 +548,23 @@ def shot_build(f, n):
     """
     t = ease_in_out((f / n - 0.18) / (0.72 - 0.18))
     w = int(W * (0.52 + 0.48 * t))
-    slide = Image.open(SHOTS / "slide-01-720p.png").convert("RGB")
-    h = int(w * slide.height / slide.width)
+    q = clamp((t - 0.12) / 0.30)
+    chosen = Image.open(PREVIEWS / "03-wildcard-manual.png").convert("RGB")
+    deck = Image.open(SHOTS / "slide-01-720p.png").convert("RGB")
+    slide = chosen if q == 0 else deck if q == 1 else Image.blend(chosen, deck, q)
+    h = w * 9 // 16
     x, y = (W - w) // 2, (H - h) // 2
-    panel = slide.resize((w, h), Image.LANCZOS).convert("RGBA")
-    mask = Image.new("L", (w, h), 0)
-    ImageDraw.Draw(mask).rounded_rectangle((0, 0, w - 1, h - 1),
-                                           radius=max(6, int(w * 0.014)), fill=255)
-    panel.putalpha(mask)
     img, d = stage()
-    halo = Image.new("RGBA", (w + 240, h + 240), (0, 0, 0, 0))
-    halo.paste(Image.new("RGBA", (w, h), (0, 0, 0, 205)), (120, 120), mask)
-    img.alpha_composite(halo.filter(ImageFilter.GaussianBlur(46)), (x - 120, y - 120))
-    d.rounded_rectangle((x - 5, y - 5, x + w + 4, y + h + 4),
-                        radius=int(max(8, w * 0.018)), outline=(255, 255, 255, 42), width=2)
-    img.alpha_composite(panel, (x, y))
+    radius = 0 if w >= W - 2 else max(8, round(12 * (W - w) / (W * 0.48)))
+    float_screen(img, slide, x, y, w, h, chosen=q < 0.82,
+                 radius=radius, shell=7)
     return img
 
 
 def shot_verify(f, n):
     img, d = stage()
-    x = 32 * math.sin(math.pi * f / n)
-    y = 10 * math.sin(2 * math.pi * f / n)
+    x = 18 * math.sin(math.pi * f / n)
+    y = 8 * math.sin(2 * math.pi * f / n)
 
     # Far layer: headline, racking into focus over the first 12 frames.
     far = Image.new("RGBA", (W, H), (0, 0, 0, 0))
@@ -533,39 +583,57 @@ def shot_verify(f, n):
     md = ImageDraw.Draw(mid)
     proj_in = ease_out((f - 2) / 6)
     if proj_in > 0:
-        pj = Image.open(SHOTS / "slide-05-720p.png").convert("RGBA").resize((596, 335), Image.LANCZOS)
-        pj.putalpha(int(255 * proj_in))
-        mid.alpha_composite(pj, (64, 170))
-        md.rectangle((62, 168, 662, 507), outline=INK, width=2)
-        tracked(md, (64, 518), "1280 × 720  ·  PROJECTOR / 1080P", F["mono_xs"], INK2, 1)
+        pj = Image.open(SHOTS / "slide-05-720p.png").convert("RGB")
+        float_screen(mid, pj, 84, 174, 560, 315, enter=proj_in,
+                     radius=12, shell=9)
+        tracked(md, (84, 506), "1280 × 720  ·  PROJECTOR / 1080P", F["mono_xs"], INK2, 1)
     ph_in = ease_out((f - 8) / 6)
     if ph_in > 0:
-        src = Image.open(SHOTS / "slide-02-phone.png").convert("RGBA").resize((202, 436), Image.LANCZOS)
-        src.putalpha(int(255 * ph_in))
-        hx, hy = 1002, 150
-        md.rounded_rectangle((hx - 12, hy - 14, hx + 214, hy + 450), radius=26, fill=INK)
-        md.rounded_rectangle((hx - 4, hy - 6, hx + 206, hy + 442), radius=20, fill=(45, 42, 38))
+        src = Image.open(SHOTS / "slide-02-phone.png").convert("RGBA").resize((176, 380), Image.LANCZOS)
+        hx, hy = 1006, 160
+        shadow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        ImageDraw.Draw(shadow).rounded_rectangle(
+            (hx + 8, hy + 18, hx + 168, hy + 410), radius=30, fill=(0, 0, 0, 168))
+        mid.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(24)))
+        md.rounded_rectangle((hx - 14, hy - 14, hx + 190, hy + 400),
+                             radius=34, fill=(238, 242, 248, 245),
+                             outline=(255, 255, 255, 90), width=1)
+        md.rounded_rectangle((hx - 7, hy - 7, hx + 183, hy + 387),
+                            radius=27, fill=(7, 8, 12, 255))
+        mask = Image.new("L", (176, 380), 0)
+        ImageDraw.Draw(mask).rounded_rectangle((0, 0, 175, 379), radius=22, fill=255)
+        src.putalpha(mask.point(lambda a: int(a * ph_in)))
         mid.alpha_composite(src, (hx, hy))
-        tracked(md, (hx - 12, hy + 456), "390 × 844  ·  PHONE", F["mono_xs"], INK2, 1)
+        md.rounded_rectangle((hx, hy, hx + 175, hy + 379), radius=22,
+                             outline=(255, 255, 255, 72), width=1)
+        phone_caption = "390 × 844 · PHONE"
+        tracked(md, (hx + 88 - tracked_w(md, phone_caption, F["mono_xs"], 1) / 2, hy + 424),
+                phone_caption, F["mono_xs"], INK2, 1)
     img.alpha_composite(mid, (int(x * 0.7), int(y * 0.7)))
 
     # Near layer: the receipt.
     near = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     term_a = int(255 * ease_out((f - 14) / 6))
     if term_a > 0:
-        term = Image.new("RGBA", (884, 150), CODE + (term_a,))
+        term = Image.new("RGBA", (830, 108), (0, 0, 0, 0))
         td = ImageDraw.Draw(term)
+        td.rounded_rectangle((0, 0, 829, 107), radius=14,
+                             fill=CODE + (term_a,),
+                             outline=(255, 255, 255, int(term_a * 0.14)), width=1)
+        td.rounded_rectangle((5, 5, 824, 102), radius=11,
+                             outline=(255, 255, 255, int(term_a * 0.07)), width=1)
         colp, colc = CODE_PAPER + (term_a,), CINNABAR_BRIGHT + (term_a,)
-        td.text((22, 16), "$ python3 scripts/verify-deck.py pitch.html", font=F["mono_s"], fill=colp)
+        td.text((22, 16), "$ python3 scripts/verify-deck.py pitch.html",
+                font=F["mono_xs"], fill=colp)
         if f >= 22:
-            td.text((22, 50), "6 slides   ·   2 viewports   ·   0 overflow", font=F["mono_s"], fill=colp)
+            td.text((22, 46), "6 slides · 2 viewports · 0 overflow",
+                    font=F["mono_xs"], fill=colp)
         if f >= 28:
-            td.text((22, 86), "0 errors · 0 warnings", font=F["term_l"], fill=colc)
-        near.alpha_composite(term, (64, 510))
-    if f >= 34:
-        st = stamp("CLEARED", "FOR LAUNCH", scale=0.5 * ease_out_back((f - 34) / 8), alpha=230)
-        near.alpha_composite(st, (700 - st.width // 2, 585 - st.height // 2))
-    img.alpha_composite(near, (int(x * 1.4), int(y * 1.4)))
+            td.ellipse((796, 25, 805, 34), fill=colc)
+            td.text((712, 20), "CLEARED", font=F["mono_xs"], fill=colc)
+            td.text((22, 74), "0 errors · 0 warnings", font=F["mono_b"], fill=colc)
+        near.alpha_composite(term, (76, 586))
+    img.alpha_composite(near, (int(x * 1.2), int(y * 1.2)))
     return img
 
 
@@ -581,14 +649,23 @@ def shot_end(f, n):
         tracked(ld, (W / 2 - tw / 2, 268), txt, F["h1"], CINNABAR + (int(255 * a2),), 2)
         img.alpha_composite(layer)
     if f >= 7:
-        center_tracked(d, W / 2, 386, "CONCEPT GATE · CRITIQUE LOOP · DUAL-VIEWPORT VERIFY",
-                       F["mono_s"], INK2, 2)
+        a = int(255 * ease_out((f - 7) / 6))
+        for i, label in enumerate(("CONCEPT GATE", "CRITIQUE LOOP", "DUAL VIEWPORT")):
+            x0 = 262 + i * 258
+            d.rounded_rectangle((x0, 390, x0 + 240, 448), radius=18,
+                                fill=(10, 13, 19, int(a * 0.88)),
+                                outline=(255, 255, 255, int(a * 0.13)), width=1)
+            tracked(d, (x0 + 120 - tracked_w(d, label, F["mono_xs"], 2) / 2, 414),
+                    label, F["mono_xs"], INK2 + (a,), 2)
     if f >= 10:
         url = "github.com/MJorgin/preflight-decks"
         uw = int(d.textlength(url, font=F["mono"])) + 48
         ux = int(W / 2 - uw / 2)
-        d.rounded_rectangle((ux, 446, ux + uw, 496), radius=6, fill=CODE)
-        d.text((ux + 24, 458), url, font=F["mono"], fill=CODE_PAPER)
+        d.rounded_rectangle((ux, 482, ux + uw, 536), radius=16,
+                            fill=CODE, outline=(255, 255, 255, 30), width=1)
+        d.rounded_rectangle((ux + 5, 487, ux + uw - 5, 531), radius=12,
+                            outline=(255, 255, 255, 12), width=1)
+        d.text((ux + 24, 496), url, font=F["mono"], fill=CODE_PAPER)
     return img
 
 
@@ -596,15 +673,17 @@ SHOT_FN = {"intake": shot_intake, "gate": shot_gate, "build": shot_build,
            "verify": shot_verify, "end": shot_end}
 CAM_FN = {"intake": cam_intake, "gate": cam_gate, "build": cam_static,
           "verify": cam_static, "end": cam_end}
-LABELS = {"intake": "INTAKE", "gate": "CONCEPT GATE", "build": "BUILD",
-          "verify": "VERIFY", "end": "PREFLIGHT COMPLETE"}
+LABELS = {"intake": "01 · INTAKE", "gate": "02 · CONCEPT GATE",
+          "build": "03 · BUILD", "verify": "04 · VERIFY",
+          "end": "05 · PREFLIGHT COMPLETE"}
 
 
 def scene_frame(index, local):
-    name, _ = SCENES[index]
-    sheet = SHOT_FN[name](max(0, local), SCENES[index][1])
-    zoom, cx, cy = CAM_FN[name](max(0, local), SCENES[index][1])
-    return hud(apply_camera(sheet, zoom, cx, cy), LABELS[name], chip=(name == "build"))
+    name, scene_frames = SCENES[index]
+    local = max(0, min(local, scene_frames - 1))
+    sheet = SHOT_FN[name](local, scene_frames)
+    zoom, cx, cy = CAM_FN[name](local, scene_frames)
+    return hud(apply_camera(sheet, zoom, cx, cy), LABELS[name])
 
 
 def ensure_verifier_shots():
@@ -665,11 +744,11 @@ def render_frame(g):
                 nxt = nxt.filter(ImageFilter.GaussianBlur(r))
         out = Image.blend(prev, nxt, a)
         if kind == "flash":
-            out = Image.blend(out, Image.new("RGB", (W, H), (255, 253, 248)),
-                              0.95 * (1 - abs(u)) ** 0.8)
+            out = Image.blend(out, Image.new("RGB", (W, H), (255, 248, 238)),
+                              0.38 * (1 - abs(u)) ** 0.8)
         elif kind == "dip":
-            out = Image.blend(out, Image.new("RGB", (W, H), (20, 20, 20)),
-                              0.9 * (1 - abs(u)))
+            out = Image.blend(out, Image.new("RGB", (W, H), PAPER),
+                              0.72 * (1 - abs(u)))
         return out
     return scene_frame(scene_index_for(g), g - scene_start(scene_index_for(g)))
 
