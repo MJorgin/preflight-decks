@@ -25,17 +25,18 @@
 
 </div>
 
-![同一个需求变成三个结构真正不同的真实预览，被选中的方向做成六页 deck，并在投影仪和手机尺寸下通过验收](./assets/hero-concept-gate.gif?v=20260917-cinematic)
+![同一个需求变成三个结构真正不同的真实预览，被选中的方向做成六页 deck，并在投影仪和手机尺寸下通过验收](./assets/hero-concept-gate.gif?v=20260918-premium-readme)
 
 <p align="center"><sub>
 20 秒 · 需求 → 三个真实方向 → 选定后成稿 → 双视口验收。
 每一帧都是本仓库自己的产物——概念门预览、六页
 <a href="./examples/preflight-decks-pitch.html">示例 deck</a>，以及真实的验收报告：
 <b>6 页 · 2 个视口 · 0 错误 · 0 警告</b>。
-用摄影机拍的：开场定场微推、一次对准选中方向的 1.3x 推近、验收墙上的视差漂移，
-最后拉回全景停稳。背景也换成与在线落地页一致的 OLED 渐变、稀疏粒子场、
-透视网格和固定颗粒。
-<a href="./assets/hero-concept-gate.mp4?v=20260917-cinematic">MP4 版</a> ·
+这不是直录屏幕：真实截图被放进悬浮玻璃屏与柔和落地阴影里，只用克制的信号红
+标记被选中的方向。镜头依次完成横向滑轨、52% 到满幅的连续推近、投影仪/手机
+验收凭据，最后拉回全景停稳；OLED 渐变、稀疏粒子场、透视网格和固定颗粒都与在线
+落地页统一。
+<a href="./assets/hero-concept-gate.mp4?v=20260918-premium-readme">MP4 版</a> ·
 <a href="./docs/hero-film-storyboard.md">分镜卡</a>
 </sub></p>
 
@@ -95,7 +96,7 @@ Preflight Decks 让这三件事*在结构上不可能发生*：三个**结构不
 
 同一个需求渲染三版。只有被选中的那一版会被做成完整 deck。
 
-![三个概念门预览：安全预设、大胆模板、自定义飞行手册，其中自定义方向被标记为选中](./assets/demo-previews.png)
+![三个概念门预览：安全预设、大胆模板、自定义飞行手册，其中自定义方向被标记为选中](./assets/demo-previews.png?v=20260918-staged)
 
 ### 2. 被选中的方向变成 deck
 

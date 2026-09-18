@@ -28,21 +28,21 @@ a 1080p projector and a phone before anyone walks into the room.
 
 </div>
 
-![One brief becomes three structurally different real previews; the chosen direction is built into a six-slide deck and verified at projector and phone sizes](./assets/hero-concept-gate.gif?v=20260917-cinematic)
+![One brief becomes three structurally different real previews; the chosen direction is built into a six-slide deck and verified at projector and phone sizes](./assets/hero-concept-gate.gif?v=20260918-premium-readme)
 
 <p align="center"><sub>
 20 seconds · intake → three real directions → chosen deck → dual-viewport verification.
 Every frame is this repo's own output — the concept-gate previews, the six-slide
 <a href="./examples/preflight-decks-pitch.html">example deck</a>, and a real verifier
 report: <b>6 slides · 2 viewports · 0 errors · 0 warnings</b>.
-Shot on a stage, not on a page: a lateral pan across the three directions, one
-continuous push from a 52% panel to full bleed as the chosen direction becomes the
-deck, and a pull-back to a static full view. The stage now carries the same
-OLED gradient, sparse particle field, perspective grid and fixed grain as the
-live launch page. The grammar is measured from
+The cut uses floating glass screens, soft floor shadows, and one restrained
+signal-red accent: a lateral rail pan, one continuous push from a 52% panel to
+full bleed, a projector/phone verification receipt, and a pull-back to a static
+full view. The OLED gradient, sparse particle field, perspective grid and fixed
+grain match the live launch page. The camera grammar is measured from
 apple.com's product pages — see
 <a href="./references/scroll-camera-recipes.md">the shot catalogue</a>.
-<a href="./assets/hero-concept-gate.mp4?v=20260917-cinematic">MP4 version</a> ·
+<a href="./assets/hero-concept-gate.mp4?v=20260918-premium-readme">MP4 version</a> ·
 <a href="./docs/hero-film-storyboard.md">storyboard</a>
 </sub></p>
 
@@ -120,7 +120,7 @@ editing, PDF/URL export, PPTX conversion.
 
 The same brief rendered three ways. Only the chosen one gets built.
 
-![Three concept-gate previews: safe preset, bold template, wildcard field manual, with the wildcard marked chosen](./assets/demo-previews.png)
+![Three concept-gate previews: safe preset, bold template, wildcard field manual, with the wildcard marked chosen](./assets/demo-previews.png?v=20260918-staged)
 
 ### 2. The chosen direction becomes the deck
 

@@ -1,110 +1,112 @@
 #!/usr/bin/env python3
-"""Render assets/demo-previews.png — the concept-gate comparison image.
+"""Render the README concept-gate contact sheet on the cinematic stage."""
+from __future__ import annotations
 
-The three source previews are 1280x720 landscape slides. A 3-up strip at
-README width makes each slide unreadable, so this renders them as three
-full-width labeled rows in the field-manual visual language.
-"""
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
+from sitestage import add_glow, AMBER, CINNABAR, COOL, INK, MUTE, plate, stage_screen
+
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "assets" / "demo-previews.png"
-SRCS = [
-    (ROOT / "examples/previews/01-safe-swiss.png", "01",
-     "SAFE PRESET", "competent, forgettable — the template default", False),
-    (ROOT / "examples/previews/02-bold-signal.png", "02",
-     "BOLD TEMPLATE", "louder and confident, but the same skeleton", False),
-    (ROOT / "examples/previews/03-wildcard-manual.png", "03",
-     "WILDCARD — LAUNCH PREFLIGHT FIELD MANUAL", "chosen, then built into the full deck", True),
-]
 
-AVENIR = "/System/Library/Fonts/Supplemental/Avenir Next.ttc"
-MENLO = "/System/Library/Fonts/Menlo.ttc"
-
-PAPER = (244, 240, 230)
-INK = (26, 24, 21)
-INK2 = (92, 85, 74)
-INK3 = (150, 143, 128)
-CINNABAR = (170, 48, 26)
-LINE = (202, 194, 178)
+SF = "/System/Library/Fonts/SFNS.ttf"
+SFMONO = "/System/Library/Fonts/SFNSMono.ttf"
 
 W = 1600
-PAD = 64
-IMG_W = W - PAD * 2
-IMG_H = IMG_W * 9 // 16
-ROW_HEAD = 78
-ROW_GAP = 40
-TOP = 238
-BOTTOM = 96
+TOP = 250
+CARD_X, CARD_W, CARD_H = 240, 1120, 630
+PITCH = 730
+H = TOP + 3 * PITCH + 135
+
+ROWS = [
+    ("01", "01-safe-swiss.png", ("SAFE", "PRESET"),
+     "Competent, but template-default", False),
+    ("02", "02-bold-signal.png", ("BOLD", "TEMPLATE"),
+     "Louder, but the same skeleton", False),
+    ("03", "03-wildcard-manual.png", ("WILDCARD", "FIELD MANUAL"),
+     "Chosen, then built into the full deck", True),
+]
 
 
-def font(path, size, index=0):
-    return ImageFont.truetype(path, size=size, index=index)
+def sf(size, weight="Regular"):
+    font = ImageFont.truetype(SF, size=size)
+    try:
+        font.set_variation_by_name(weight)
+    except OSError:
+        pass
+    return font
 
 
-def tracked(d, xy, text, fnt, fill, tracking=0):
+def mono(size, weight="Regular"):
+    font = ImageFont.truetype(SFMONO, size=size)
+    try:
+        font.set_variation_by_name(weight)
+    except OSError:
+        pass
+    return font
+
+
+def tracked(draw, xy, text, font, fill, tracking=0):
     x, y = xy
     for ch in text:
-        d.text((x, y), ch, font=fnt, fill=fill)
-        x += d.textlength(ch, font=fnt) + tracking
+        draw.text((x, y), ch, font=font, fill=fill)
+        x += draw.textlength(ch, font=font) + tracking
 
 
-def text_h(d, text, fnt):
-    b = d.textbbox((0, 0), text, font=fnt)
-    return b[3] - b[1]
+def wrap(draw, text, font, width):
+    words, lines, cur = text.split(), [], ""
+    for word in words:
+        trial = f"{cur} {word}".strip()
+        if draw.textlength(trial, font=font) <= width:
+            cur = trial
+        else:
+            lines.append(cur)
+            cur = word
+    if cur:
+        lines.append(cur)
+    return lines
 
 
 def main():
-    f_mono_xs = font(MENLO, 22)
-    f_mono_s = font(MENLO, 26)
-    f_mono_b = font(MENLO, 28)
-    f_idx = font(MENLO, 40)
-    f_h = font(AVENIR, 52, index=4)  # Avenir Next Medium, ttc index varies
+    base = plate(W, H)
+    add_glow(base, AMBER, 0.14, -0.02, 0.48, 0.11)
+    add_glow(base, CINNABAR, 0.92, -0.08, 0.52, 0.14)
+    add_glow(base, COOL, 0.48, 1.08, 0.54, 0.08)
+    d = ImageDraw.Draw(base)
 
-    H = TOP + 3 * (ROW_HEAD + IMG_H + ROW_GAP) - ROW_GAP + BOTTOM
-    canvas = Image.new("RGB", (W, H), PAPER)
-    d = ImageDraw.Draw(canvas)
+    tracked(d, (240, 70), "CONCEPT GATE", mono(22, "Medium"), AMBER + (255,), 4)
+    d.text((236, 112), "Same brief, three real directions.",
+           font=sf(66, "Bold"), fill=INK + (255,))
+    d.text((240, 196), "Each is structurally different — not one skeleton recolored three times.",
+           font=sf(27), fill=MUTE + (255,))
 
-    # Header
-    tracked(d, (PAD, 56), "CONCEPT GATE", f_mono_xs, CINNABAR, 4)
-    d.text((PAD, 92), "Same brief, three real directions.", font=f_h, fill=INK)
-    d.text((PAD, 156), "Each is a structurally different slide — not one skeleton recolored",
-           font=f_mono_s, fill=INK2)
-    d.text((PAD, 192), "three times. You choose on pixels before a full deck exists.",
-           font=f_mono_s, fill=INK2)
+    f_index, f_title, f_note = mono(44, "Medium"), mono(20, "Medium"), sf(22)
+    for i, (idx, filename, title_lines, note, chosen) in enumerate(ROWS):
+        y = TOP + i * PITCH
+        slide = Image.open(ROOT / "examples" / "previews" / filename)
+        stage_screen(base, slide, CARD_X, y, CARD_W, CARD_H,
+                     radius=16, chosen=chosen, dark_slide=i == 1)
 
-    y = TOP
-    for src, idx, title, sub, chosen in SRCS:
-        tracked(d, (PAD, y + 6), idx, f_idx, CINNABAR if chosen else INK3, 2)
-        d.text((PAD + 110, y), title, font=f_mono_b, fill=INK)
-        d.text((PAD + 110, y + 38), sub, font=f_mono_s, fill=INK2)
-
-        slide = Image.open(src).convert("RGB").resize((IMG_W, IMG_H), Image.LANCZOS)
-        sy = y + ROW_HEAD
-        canvas.paste(slide, (PAD, sy))
-        border_w = 4 if chosen else 2
-        d.rectangle((PAD - border_w // 2, sy - border_w // 2,
-                     PAD + IMG_W + border_w // 2 - 1, sy + IMG_H + border_w // 2 - 1),
-                    outline=CINNABAR if chosen else LINE, width=border_w)
+        color = CINNABAR if chosen else (150, 156, 168)
+        d.text((72, y + 205), idx, font=f_index, fill=color + (255,))
+        for j, line in enumerate(title_lines):
+            tracked(d, (72, y + 278 + j * 30), line, f_title, INK + (255,), 2)
+        for j, line in enumerate(wrap(d, note, f_note, 142)):
+            d.text((72, y + 352 + j * 30), line, font=f_note, fill=MUTE + (255,))
 
         if chosen:
-            tag = "CHOSEN"
-            tw = int(d.textlength(tag, font=f_mono_s)) + 34
-            th = 42
-            tx = PAD + IMG_W - tw - 24
-            ty = sy + 24
-            d.rectangle((tx, ty, tx + tw, ty + th), fill=CINNABAR)
-            d.text((tx + 17, ty + 5), tag, font=f_mono_s, fill=PAPER)
+            x1 = CARD_X + CARD_W - 164
+            d.rounded_rectangle((x1, y + 24, x1 + 140, y + 62), radius=19,
+                                fill=CINNABAR + (238,))
+            tracked(d, (x1 + 27, y + 36), "CHOSEN", mono(15, "Medium"),
+                    (255, 255, 255, 255), 2)
 
-        y += ROW_HEAD + IMG_H + ROW_GAP
-
-    tracked(d, (PAD, H - 58), "ONLY THE CHOSEN DIRECTION IS BUILT INTO THE FULL DECK",
-            f_mono_xs, INK3, 3)
-
+    tracked(d, (240, H - 72), "ONLY THE CHOSEN DIRECTION IS BUILT INTO THE FULL DECK",
+            mono(18, "Medium"), (150, 156, 168, 255), 3)
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    canvas.save(OUT, optimize=True)
+    base.convert("RGB").save(OUT, optimize=True)
     print(f"wrote {OUT} {W}x{H}")
 
 
